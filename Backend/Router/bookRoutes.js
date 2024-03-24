@@ -1,24 +1,25 @@
 const express=require('express')
 const verifyToken = require('../middleware/verifyToken')
-const BOOK = require('../Schema/BOOK')
+const BOOK = require('../Schema/BOOK');
+// const path = require('path')
+// const multer = require('multer')
 const router = express.Router()
 
-//create a new book
-router.post('/create',verifyToken,async(req,resp)=>{
-    const userId = req.userId
-    const {title,author,category,isbn,pic,edition}=req.body
+
+router.post('/create', verifyToken, async (req, res) => {
+    const userId = req.userId;
+    const { title, author, category, isbn, edition,frontPage,backPage } = req.body;
     try {
-        if (!title || !author  || !isbn || !category || !pic || !edition) {
-            return resp.status(400).json({ error: 'Incomplete book details.' });
+        if (!title || !author || !isbn || !category || !edition || !frontPage || !backPage) {
+            return res.status(400).json({ error: 'Incomplete book details.' });
         }
-        const newBook = await BOOK.create({title,author,isbn,category,pic,owner:userId,edition})
-        const getNewBook = await newBook.populate("owner","-password")
-        resp.status(201).json(getNewBook);
-        
+        const newBook = await BOOK.create({ title, author, isbn, category, owner: userId, edition, frontPage, backPage });
+        const getNewBook = await newBook.populate("owner", "username email")
+        res.status(201).json(getNewBook);
     } catch (error) {
-        resp.status(500).json({message:error.message});
+        res.status(500).json({ message: error.message });
     }
-})
+});
 
 //get all books which are available for exchange
 router.get('/allBooks',verifyToken,async(req,resp)=>{
@@ -30,11 +31,12 @@ router.get('/allBooks',verifyToken,async(req,resp)=>{
     }
 })
 
+
 //get single book by Id
 router.get('/:bookId',verifyToken,async(req,resp)=>{
     const {bookId}=req.params
     try {
-        const books = await BOOK.findOne({ isAvailable: true,_id:bookId }).populate('owner', 'username');
+        const books = await BOOK.findOne({ isAvailable: true,_id:bookId }).populate('owner', 'username email');
         if(!books){
             return  resp.status(404).json({error:"No book Found"});  
         }
@@ -45,19 +47,36 @@ router.get('/:bookId',verifyToken,async(req,resp)=>{
 })
 
 //request a book by Id
-router.post('/request/:bookId',verifyToken,async(req,resp)=>{
-    const userId=req.userId
-    const {bookId}=req.params
-    try {
-        const updatedBook  = await BOOK.findOneAndUpdate({_id:bookId,isAvailable:true},{isAvailable:false,requester:userId},{new:true,runValidators:true}).populate("requester","username email")
-        if (!updatedBook) {
-            return resp.status(404).json({ error: 'Book not available for request.' });
-        }
-        resp.status(200).json({message:"Request has been sent",updatedBook});
-    } catch (error) {
-        resp.status(500).json({message:error.message});
-    }
-})
+router.post('/request/:bookId', verifyToken, async (req, resp) => {
+  const userId = req.userId;
+  const { bookId } = req.params;
+  try {
+      if (!userId) {
+          return resp.status(401).json({ error: "Unauthorized" });
+      }
+      const heldBook = await BOOK.findOne({ holder: userId });
+      if (heldBook) {
+          return resp.status(400).json({ error: "You cannot request another book while you hold one. , return the book first." });
+      }
+      const updatedBook = await BOOK.findOneAndUpdate(
+          { _id:bookId, isAvailable: true,holder: null },
+          {requester: userId },
+          {new: true, runValidators: true}
+      ).populate("requester", "username email").populate("owner", "username email");
+      if(updatedBook.requester===userId){
+          return resp.status(400).json({ error: "You cannot request your own book." });
+      }
+    
+      if (!updatedBook) {
+          return resp.status(404).json({ error: 'Book not available for request.' });
+      }
+
+      resp.status(200).json({ message: "Request has been sent", updatedBook });
+  } catch (error) {
+      resp.status(500).json({ message: error.message });
+  }
+});
+
 
 //delete a book
 router.delete('/:bookId', verifyToken, async (req, resp) => {
@@ -72,34 +91,110 @@ router.delete('/:bookId', verifyToken, async (req, resp) => {
     }
   });
 
-  //get all requests
-  router.get('/books/requests', verifyToken, async (req, resp) => {
+  //view requests
+  router.get('/view/requests', verifyToken, async (req, resp) => {
+    const userId = req.userId;
     try {
-      const requests = await BOOK.find({ owner: req.userId, isAvailable: false })
-        .populate('requester', 'username');
-  if(requests.length===0){
-    return resp.status(404).json({ error: 'No requests present' });
-  }
-      resp.status(200).json({message:`You have ${requests.length} request waiting`,requests});
+      if (!userId) {
+        return resp.status(401).json({ error: 'Un-authorized' });
+      }
+      const requests =await BOOK.find({ owner: userId, isApproved: false, requester: { $ne: null } }).populate("requester", "username email");
+      if(!requests || requests.length === 0) {
+        return resp.status(404).json({ error: 'No requests found' });
+      }
+      resp.status(200).json(requests);
     } catch (error) {
       console.error(error);
-      resp.status(500).json({ error: 'Server error' });
+      resp.status(500).json({ error: 'Server error in viewing requests'});
     }
   });
 
 
-  //approve a request of book by bookId
-  router.put('/approve/:bookId',verifyToken,async(req,resp)=>{
+  router.put('/approve/:bookId', verifyToken, async (req, resp) => {
+    const userId = req.userId;
+    const { bookId } = req.params;
+
     try {
-        const updatedRequest = await BOOK.findOneAndUpdate({_id:req.params.bookId,owner:req.userId,isAvailable:false},{isApproved:true},{new:true,runValidators:true}).populate("requester","username email")
-        if (!updatedRequest) {
-            return resp.status(404).json({ error: 'Book request not found or not authorized.' });
-          }
-          resp.status(200).json({message:`Book has been successfully traded to ${updatedRequest.requester.username} , new owner of book is ${updatedRequest.requester.username}`,updatedRequest });
+        if (!userId) {
+            return resp.status(401).json({ error: 'Un-authorized' });
+        }
+        
+        const book = await BOOK.findById(bookId).populate("requester", "username email").populate("owner", "username email");
+        if(!book){
+            return resp.status(404).json({ error: 'Book not found' });
+        }
+        book.isApproved = true;
+        book.holder = book.requester._id;
+        book.requester = null;
+        book.isAvailable = false;
+        // console.log(book);
+        await book.save();
+        const updatedBook = await BOOK.findById(bookId).populate("requester", "username email").populate("owner", "username email").populate("holder", "username email");
+        if(!updatedBook){
+            return resp.status(404).json({ error: 'Book not found' });
+        }
+        resp.status(200).json({ message:`Book approved successfully , the holder of book is ${updatedBook.holder.username}`, updatedBook });
     } catch (error) {
-        resp.status(500).json({ error: 'Server error' });
+      console.log(error);
+        resp.status(500).json({ error: 'Server error while uploading book' });
     }
-  })
+});
+
+
+router.post('/return/:bookId', verifyToken, async (req, resp) => {
+    const userId = req.userId;
+    const { bookId } = req.params;
+    try {
+        if (!userId) {
+            return resp.status(401).json({ error: 'Un-authorized' });
+        }
+        const book = await BOOK.findById(bookId).populate("requester", "username email").populate("owner", "username email").populate("holder", "username email");
+        
+        if(!book){
+            return resp.status(404).json({ error: 'Book not found' });
+        }
+        if(String(book.holder._id)!==String(userId)){
+            return resp.status(400).json({ error: 'You are not the holder of this book' });
+        }
+        if(String(book.holder._id)===String(book.owner._id)){
+          return resp.status(400).json({ error: 'You cannot return your own book' });
+        }
+      book.isApproved = false;
+      book.holder = null;
+      book.requester = null;
+      book.isAvailable = true;
+      
+    //   // console.log(book);
+      await book.save();
+      const updatedBook = await BOOK.findById(bookId).populate("requester", "username email").populate("owner", "username email").populate("holder", "username email");
+      resp.status(200).json({ message:`Book will be returned successfully`,updatedBook});
+
+    } catch (error) {
+      console.log(error);
+      resp.status(500).json({ error: 'Server error while returning book' });
+    }
+})
+
+
+router.get('/view/returned', verifyToken, async (req, resp) => {
+    const userId = req.userId;
+    try {
+      if (!userId) {
+        return resp.status(401).json({ error: 'Un-authorized' });
+      }
+      const returnedBooks =await BOOK.find({ owner: userId, isReturned: true }).populate("owner", "username email");
+      if(!returnedBooks || returnedBooks.length === 0) {
+        return resp.status(404).json({ error: 'No returned books found' });
+      }
+      resp.status(200).json(returnedBooks);
+    } catch (error) {
+      console.error(error);
+      resp.status(500).json({ error: 'Server error in viewing returned books'});
+    }
+})
+
+
+
 
 
 

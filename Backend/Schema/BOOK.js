@@ -29,6 +29,11 @@ const bookSchema = new Schema({
     ref: 'USER',
     required: true,
   },
+  holder:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'USER',
+  default: null
+  },
   isAvailable: {
     type: Boolean,
     default: true,
@@ -38,14 +43,26 @@ const bookSchema = new Schema({
     ref: 'USER',
     default: null,
   },
+  desc:{
+    type: String,
+  },
   isApproved: {
     type: Boolean,
     default: false,
   },
-  pic:{
+  isReturned:{
+    type: Boolean,
+    default: false,
+  },
+  frontPage: {
     type: String,
-    required:true
+    required: true,
+  },
+  backPage: {
+    type: String,
+    required: true,
   }
 });
+
 
 module.exports = mongoose.model('BOOK', bookSchema);

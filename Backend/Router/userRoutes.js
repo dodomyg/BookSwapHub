@@ -10,27 +10,29 @@ const router = express.Router()
 
 //register
 router.post("/register",async(req,resp)=>{
-    const {adhaarNum,username,email,password}=req.body
+    const { adhaarNum,username, email, password } = req.body;
     try {
-        if(!username || !adhaarNum || !password || !email){
-            return resp.status(422).json({message:"Enter all credentials"})
+        if (!username || !email || !adhaarNum || !password) {
+            return resp.status(400).json({ error: "Please fill all credentials" });
         }
-        const alreadyUser = await USER.findOne({$or:[{email},{username}]})
-        if(alreadyUser){
-            return resp.status(422).json({message:"User already exists"})
+        const existingUsername = await USER.findOne({ $or: [{ username }, { email }] });
+        if (existingUsername) {
+            return resp.status(400).json({ error: "Username or email already taken" });
         }
-        const salt = await bcrypt.genSalt(10)
-        const hashedPw = await bcrypt.hash(password,salt)
-        const newUser = await USER.create({adhaarNum,email,username,password:hashedPw})
-        if(newUser){
-            const token = jwt.sign({id:newUser._id},process.env.KEY,{expiresIn:'10d'})
-            resp.cookie("jwtToken",token,{httpOnly:true,maxAge:10*24*60*60*1000,sameSite:"strict"})
-            resp.status(201).json({message:"User Created",newUser,token})
-        }else{
-            resp.status(404).json({message:"Error Occured"})
-        }
+        const salt =await bcrypt.genSalt(10)
+        const hashedPassword =await bcrypt.hash(password,salt);
+
+        const newUser = new USER({
+            username,
+            email,
+            password: hashedPassword,
+            adhaarNum
+        });
+        await newUser.save();
+        resp.status(201).json({ message: "User registered successfully",newUser});
     } catch (error) {
-        resp.status(404).json({message:error.message})
+        console.log("error in user registration",error);
+        resp.status(500).json({ error: "Internal server error in User registration" });
     }
 })
 
@@ -48,38 +50,46 @@ router.post('/login', async (req, resp) => {
         if (!comparePw) {
             return resp.status(400).json({ message: "Incorrect Password" });
         }
-        const token = jwt.sign({id:alreadyUser._id},process.env.KEY,{expiresIn:'10d'})
-        resp.cookie("jwtToken",token,{httpOnly:true,maxAge:10*24*60*60*1000,sameSite:"strict"})
+        const token = await jwt.sign({id:alreadyUser._id},process.env.KEY,{expiresIn:'5h'})
+        resp.cookie("jwtToken",token,{path:'/',httpOnly:true,sameSite:'lax',expires:new Date(Date.now()+1000*21600)})
         resp.status(201).json({ message: "User Logged In", alreadyUser, token });
 
     } catch (error) {
-        resp.status(500).json({ message: error.message }); // Internal Server Error
+        console.log("error in user login : ",error);
+        resp.status(500).json({ error: "Internal server error in User login" });
     }
 });
 
+router.get("/jwt",verifyToken,async(req,resp)=>{
+    const userId=req.userId
+    try {
+        if(!userId){
+            return resp.status(404).json({message:"Un-authorized,log in first"})
+        }
+        const getFullUser = await USER.findById(userId);
+        resp.status(200).json(getFullUser);
+    } catch (error) {
+        console.log("error in jwt fetching : ",error);
+        resp.status(500).json({ error: "Internal server error in jwt" });
+    }
+})
 
 
 router.put('/update', verifyToken, async (req, resp) => {
-    const {username,password,email } = req.body;
+    const {username,password,email} = req.body;
     const userId = req.userId;
 
     try {
         if (!userId) {
             return resp.status(404).json({ message: "Un-authorized,log in first" });
         }
-
         if (password) {
             const salt = await bcrypt.genSalt(10);
             const hashedPw = await bcrypt.hash(password, salt);
             req.body.password = hashedPw;
         }
-
-        
         const upDateUser = await USER.findOneAndUpdate({ _id: userId }, req.body, { new: true, runValidators: true });
-
-        
-        const getFullUser = await USER.findById(userId)
-
+        const getFullUser = await USER.findById(userId);
         resp.status(200).json(getFullUser);
     } catch (error) {
         resp.status(404).json({ message: error.message });
@@ -87,15 +97,20 @@ router.put('/update', verifyToken, async (req, resp) => {
 });
 
 
-
-router.post('/logout',verifyToken,async(req,resp)=>{
+router.post("/logout",verifyToken,async(req,resp)=>{
+    const userId=req.userId
     try {
-        resp.cookie("jwtToken","",{maxAge:1})
-        resp.status(200).json({message:"User logged out!!"})
+        if(!userId){
+            return  resp.status(500).json({ error: "Un-authorized" });   
+        }
+        await resp.clearCookie('jwtToken', { path: '/' });
+        resp.status(201).json({ message: "Logged out successfully" });
     } catch (error) {
-        resp.status(404).json({message:error.message})
+        console.log("error in logout : ",error);
+        resp.status(500).json({ error: "Internal server error in logout" });
     }
 })
+
 
 
 
