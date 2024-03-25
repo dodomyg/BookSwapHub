@@ -46,36 +46,60 @@ router.get('/:bookId',verifyToken,async(req,resp)=>{
     }
 })
 
+
 //request a book by Id
 router.post('/request/:bookId', verifyToken, async (req, resp) => {
   const userId = req.userId;
   const { bookId } = req.params;
+
   try {
       if (!userId) {
           return resp.status(401).json({ error: "Unauthorized" });
       }
+
       const heldBook = await BOOK.findOne({ holder: userId });
       if (heldBook) {
-          return resp.status(400).json({ error: "You cannot request another book while you hold one. , return the book first." });
+          return resp.status(400).json({ error: "You cannot request another book while you hold one, return the book first." });
       }
+
+      const book = await BOOK.findById(bookId);
+
+      if (!book) {
+          return resp.status(404).json({ error: 'Book not found.' });
+      }
+
+      if (String(book.owner) === String(userId)) {
+          return resp.status(400).json({ error: 'You cannot request your own book.' });
+      }
+
+      if (String(book.requester) === String(userId)) {
+          await BOOK.findOneAndUpdate(
+              { _id: bookId },
+              { requester: null },
+              { new: true, runValidators: true }
+          );
+          return resp.status(200).json({ message: 'Request canceled successfully.' });
+      }
+
+      // Otherwise, send the request
       const updatedBook = await BOOK.findOneAndUpdate(
-          { _id:bookId, isAvailable: true,holder: null },
-          {requester: userId },
-          {new: true, runValidators: true}
+          { _id: bookId, isAvailable: true, holder: null },
+          { requester: userId },
+          { new: true, runValidators: true }
       ).populate("requester", "username email").populate("owner", "username email");
-      if(updatedBook.requester===userId){
-          return resp.status(400).json({ error: "You cannot request your own book." });
-      }
-    
+
       if (!updatedBook) {
           return resp.status(404).json({ error: 'Book not available for request.' });
       }
 
       resp.status(200).json({ message: "Request has been sent", updatedBook });
   } catch (error) {
-      resp.status(500).json({ message: error.message });
+      console.log(error);
+      resp.status(500).json({ error:"error while requesting" });
   }
 });
+
+
 
 
 //delete a book
@@ -140,7 +164,7 @@ router.delete('/:bookId', verifyToken, async (req, resp) => {
     }
 });
 
-
+//return a book
 router.post('/return/:bookId', verifyToken, async (req, resp) => {
     const userId = req.userId;
     const { bookId } = req.params;
@@ -190,6 +214,23 @@ router.get('/view/returned', verifyToken, async (req, resp) => {
     } catch (error) {
       console.error(error);
       resp.status(500).json({ error: 'Server error in viewing returned books'});
+    }
+})
+
+
+router.get('/my/holdings',verifyToken,async(req,resp)=>{
+    const userId=req.userId
+    try {
+        if(!userId){
+            return resp.status(404).json({message:"Un-authorized,log in first"})
+        }
+        const books=await BOOK.find({holder:userId}).populate("owner","username email")
+        if(!books || books.length===0){
+            return resp.status(404).json({message:"No books found"})
+        }
+        resp.status(200).json(books);  
+    } catch (error) {
+        resp.status(500).json({message:error.message})
     }
 })
 

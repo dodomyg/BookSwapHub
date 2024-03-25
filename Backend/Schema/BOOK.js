@@ -17,7 +17,7 @@ const bookSchema = new Schema({
   category: {
     type: [String],
     required: true,
-    enum: ['Fiction','Adventure', 'Non-Fiction', 'Science-Fiction', 'Mystery', 'Fantasy', 'Drama', 'Romance','Thriller','Kids' ,'Other'],
+    enum: ['Fiction','Adventure', 'Non-Fiction', 'Education', 'Mystery', 'Fantasy', 'Drama', 'Romance','Thriller','Kids' ,'Other'],
   },
   isbn: {
     type: String,
