@@ -14,7 +14,7 @@ router.post("/sendMessage/:chatId",verifyToken,async(req,resp)=>{
             return resp.status(404).json({error:"Un-authorized,log in first"})
         }
         if(!message){
-            return resp.status(404).json({error:"message is required"})
+            return resp.status(404).json({error:"Message cannot be empty"})
         }
         var newMsg = {
             sender: userId,
