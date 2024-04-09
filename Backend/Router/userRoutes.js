@@ -5,6 +5,7 @@ const USER = require('../Schema/USER')
 const cookieParser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
 const verifyToken = require('../middleware/verifyToken')
+const BOOK = require('../Schema/BOOK')
 const router = express.Router()
 
 
@@ -40,15 +41,15 @@ router.post('/login', async (req, resp) => {
     const { username, password } = req.body;
     try {
         if (!username || !password) {
-            return resp.status(400).json({ message: "Enter all credentials" });
+            return resp.status(400).json({ error: "Enter all credentials" });
         }
         const alreadyUser = await USER.findOne({ username });
         if (!alreadyUser) {
-            return resp.status(404).json({ message: "No user found with this username, register first" });
+            return resp.status(404).json({ error: "No user found with this username, register first" });
         }
         const comparePw = await bcrypt.compare(password, alreadyUser.password);
         if (!comparePw) {
-            return resp.status(400).json({ message: "Incorrect Password" });
+            return resp.status(400).json({ error: "Incorrect Password" });
         }
         const token = await jwt.sign({id:alreadyUser._id},process.env.KEY,{expiresIn:'5h'})
         resp.cookie("jwtToken",token,{path:'/',httpOnly:true,sameSite:'lax',expires:new Date(Date.now()+1000*21600)})
@@ -64,7 +65,7 @@ router.get("/jwt",verifyToken,async(req,resp)=>{
     const userId=req.userId
     try {
         if(!userId){
-            return resp.status(404).json({message:"Un-authorized,log in first"})
+            return resp.status(404).json({error:"Un-authorized,log in first"})
         }
         const getFullUser = await USER.findById(userId);
         resp.status(200).json(getFullUser);
@@ -81,7 +82,7 @@ router.put('/update', verifyToken, async (req, resp) => {
 
     try {
         if (!userId) {
-            return resp.status(404).json({ message: "Un-authorized,log in first" });
+            return resp.status(404).json({ error: "Un-authorized,log in first" });
         }
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -108,6 +109,24 @@ router.post("/logout",verifyToken,async(req,resp)=>{
     } catch (error) {
         console.log("error in logout : ",error);
         resp.status(500).json({ error: "Internal server error in logout" });
+    }
+})
+
+
+router.get("/myBooks",verifyToken,async(req,resp)=>{
+    const userId=req.userId
+    try {
+       if(!userId){
+        return resp.status(404).json({error:"Un-authorized,log in first"}) 
+       }
+       const books=await BOOK.find({owner:userId}).populate("holder","username email")
+       if(!books || books.length===0){
+        return resp.status(404).json({message:"No books found"})
+       }
+       resp.status(200).json(books);
+    } catch (error) {
+        console.log("error in myBooks : ",error);
+        resp.status(500).json({ error: "Internal server error in myBooks" });
     }
 })
 
