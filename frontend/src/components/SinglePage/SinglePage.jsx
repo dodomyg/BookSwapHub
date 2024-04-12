@@ -94,21 +94,14 @@ const SinglePage = () => {
             });
         }
     }
-};
-
-
-
-    console.log("Book.requester",book?.requester);
-    console.log("userId",user?._id);
-   
-
+};   
 
   return (
     <Container maxW={'7xl'}>
       <SimpleGrid
         columns={{ base: 1, lg: 2 }}
         spacing={{ base: 8, md: 10 }}
-        py={{ base: 18, md: 24 }}>
+        py={{ base: 9, md: 12 }}>
         <Flex flexDir={'column'} justifyContent={'center'} gap={10}>
           <Image
             rounded={'md'}
@@ -117,7 +110,6 @@ const SinglePage = () => {
             fit={'cover'}
             align={'center'}
             w={'100%'}
-            h={{ base: '100%', sm: '400px', lg: '500px' }}
           />
           <Image
             rounded={'md'}
@@ -126,7 +118,6 @@ const SinglePage = () => {
             fit={'cover'}
             align={'center'}
             w={'100%'}
-            h={{ base: '100%', sm: '400px', lg: '500px' }}
           />
         </Flex>
         
