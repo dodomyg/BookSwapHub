@@ -71,7 +71,7 @@ const Navbar = () => {
     <Box boxShadow={"lg"} p={4} color="black">
       <Container maxW="container.xl">
         <HStack justifyContent="space-between">
-          <Heading size="md" fontWeight={"500"}>BookSwapHub</Heading>
+          <Link to={'/'}><Heading size="md" fontSize={"25px"} fontWeight={"500"}>BookSwapHub</Heading></Link>
 
           <HStack spacing={[2, 10]} alignItems="flex-end">
             <IconButton
@@ -85,6 +85,7 @@ const Navbar = () => {
             <HStack spacing={5} display={{ base: "none", md: "flex" }}>
               <Link fontSize="lg" to={"/"}>Home</Link>
               <Link fontSize="lg" to={"/about"}>About</Link>
+              <Link fontSize="lg" to={"/create"}>Create</Link>
               <Link fontSize="lg" to={"/profile"}>My Profile</Link>
               {user ? (
                 <>
@@ -117,6 +118,7 @@ const Navbar = () => {
               <Link fontSize="lg" to={"/"}>Home</Link>
                 <Link fontSize="lg" to={"/about"}>About</Link>
                 <Link fontSize="lg" to={"/profile"}>My Profile</Link>
+                <Link fontSize="lg" to={"/create"}>Create</Link>
                 {user ? (
                   <Button type="button" onClick={logOut}>Logout</Button>
                 ) : (

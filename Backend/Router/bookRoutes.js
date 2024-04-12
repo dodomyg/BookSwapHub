@@ -2,25 +2,47 @@ const express=require('express')
 const verifyToken = require('../middleware/verifyToken')
 const BOOK = require('../Schema/BOOK');
 const USER = require('../Schema/USER');
-// const path = require('path')
-// const multer = require('multer')
+const multer = require('multer')
 const router = express.Router()
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now();
+    cb(null, file.fieldname + uniqueSuffix + '-' + file.originalname);
+  }
+});
+  
+  const upload = multer({ storage: storage })
 
-router.post('/create', verifyToken, async (req, res) => {
+
+
+
+
+
+  router.post('/create', verifyToken, upload.fields([{ name: 'frontPage', maxCount: 1 }, { name: 'backPage', maxCount: 1 }]), async (req, res) => {
     const userId = req.userId;
-    const { title, author, category, isbn, edition,frontPage,backPage } = req.body;
+    const { title, author, category, isbn, edition } = req.body;
+    const frontPage = req.files['frontPage'][0].filename;
+    const backPage = req.files['backPage'][0].filename;
     try {
+        if(!userId){
+            return res.status(404).json({error:"Un-authorized,log in first"})
+        }
         if (!title || !author || !isbn || !category || !edition || !frontPage || !backPage) {
             return res.status(400).json({ error: 'Incomplete book details.' });
         }
-        const newBook = await BOOK.create({ title, author, isbn, category, owner: userId, edition, frontPage, backPage });
+        const newBook = await BOOK.create({ title, author, isbn, category, owner: userId, edition, frontPage: frontPage, backPage: backPage });
         const getNewBook = await newBook.populate("owner", "username email")
-        res.status(201).json(getNewBook);
+        res.status(201).json({message:"Book created successfully",getNewBook});
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      console.log(error);
+        res.status(500).json({error:"Internal error while creating a book"});
     }
 });
+
 
 //get all books which are available for exchange
 router.get('/allBooks', verifyToken, async (req, resp) => {

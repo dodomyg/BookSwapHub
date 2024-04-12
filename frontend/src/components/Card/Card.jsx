@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom'
         <Link to={`/book/${id}`}>
           <Center py={6}>
         <Box
-          maxW={'445px'}
+          maxW={'340px'}
           w={'full'}
           // eslint-disable-next-line react-hooks/rules-of-hooks
           bg={useColorModeValue('white', 'gray.900')}
