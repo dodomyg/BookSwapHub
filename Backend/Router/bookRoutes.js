@@ -31,7 +31,10 @@ const storage = multer.diskStorage({
         if(!userId){
             return res.status(404).json({error:"Un-authorized,log in first"})
         }
-        if (!title || !author || !isbn || !category || !edition || !frontPage || !backPage) {
+        if(!frontPage || !backPage){
+            return res.status(400).json({ error: 'Incomplete book images.' });
+        }
+        if (!title || !author || !isbn || !category || !edition) {
             return res.status(400).json({ error: 'Incomplete book details.' });
         }
         const newBook = await BOOK.create({ title, author, isbn, category, owner: userId, edition, frontPage: frontPage, backPage: backPage });
@@ -47,7 +50,7 @@ const storage = multer.diskStorage({
 //get all books which are available for exchange
 router.get('/allBooks', verifyToken, async (req, resp) => {
   try {
-      let query = { isAvailable: true };
+      let query = { isAvailable: true , requester:null}
 
       if (req.query.search) {
           const searchRegex = new RegExp(req.query.search, 'i');
@@ -163,16 +166,24 @@ router.get('/:bookId', verifyToken, async (req, resp) => {
 
 //delete a book
 router.delete('/:bookId', verifyToken, async (req, resp) => {
-    try {
-      const book = await BOOK.findByIdAndDelete(req.params.bookId);
-      if (!book) {
+  try {
+    const book = await BOOK.findById(req.params.bookId);
+
+    if (!book) return resp.status(404).json({ error: 'Book not found' });
+    
+    if (book.isAvailable && !book.holder && !book.requester) {
+      const deletedBook = await BOOK.findByIdAndDelete(req.params.bookId);
+      if (!deletedBook) {
         return resp.status(404).json({ error: 'Book not found' });
       }
-      resp.status(200).json({ message: 'Book deleted successfully' });
-    } catch (error) {
-      resp.status(500).json({ error: 'Server error' });
+      return resp.status(200).json({ message: 'Book deleted successfully' });
+    } else {
+      return resp.status(400).json({ error: 'Cannot delete the book' });
     }
-  });
+  } catch (error) {
+    resp.status(500).json({ error: 'Server error' });
+  }
+});
 
   //view requests
   router.get('/view/requests', verifyToken, async (req, resp) => {
@@ -308,6 +319,23 @@ router.get('/my/holdings',verifyToken,async(req,resp)=>{
     } catch (error) {
         resp.status(500).json({message:error.message})
     }
+})
+
+router.get('/books/notAvailable',verifyToken,async(req,resp)=>{
+  const userId = req.userId
+  try {
+    if(!userId){
+      return resp.status(404).json({error:"Un-authorized,log in first"})
+    }
+    const books=await BOOK.find({requester:{$ne:null}}).populate("owner","username email")
+    if(!books || books.length===0){
+      return resp.status(404).json({message:"No books found"})
+    }
+    resp.status(200).json(books);
+  } catch (error) {
+    console.log(error);
+    resp.status(500).json({message:error.message})
+  }
 })
 
 

@@ -28,8 +28,9 @@ const SinglePage = () => {
     const {user}=useContext(UserContext)
     const toast = useToast()
     const [book,setBook]=useState(null)
-    const [req,sentReq]=useState(book?.requester===user?._id)
+    const [req,sentReq]=useState(false)
     console.log(req);
+    console.log(book?.requester===null);
     useEffect(() => {
       const fetchSingleBook = async () => {
           try {
@@ -37,10 +38,9 @@ const SinglePage = () => {
               setBook(resp.data);
               console.log(resp.data);
               // Check if the book has a requester and the user is logged in
-              if (book.requester!==null && book?.requester._id && user?._id) {
+              if (book?.requester!==null && book?.requester._id && user?._id) {
                   // Check if the requester's _id matches the user's _id
-                  if (book.requester!==null && book?.requester._id === user._id) {
-                      // User has requested the book
+                  if (book?.requester!==null && book?.requester._id === user._id) {
                       sentReq(true);
                   } else {
                       // User has not requested the book
@@ -103,22 +103,23 @@ const SinglePage = () => {
         spacing={{ base: 8, md: 10 }}
         py={{ base: 9, md: 12 }}>
         <Flex flexDir={'column'} justifyContent={'center'} gap={10}>
-          <Image
-            rounded={'md'}
-            alt={'product image'}
-            src={book?.frontPage}
-            fit={'cover'}
-            align={'center'}
-            w={'100%'}
-          />
-          <Image
-            rounded={'md'}
-            alt={'product image'}
-            src={book?.backPage}
-            fit={'cover'}
-            align={'center'}
-            w={'100%'}
-          />
+        <Image
+  rounded={'md'}
+  alt={book?.frontPage}
+  src={`http://localhost:8080/${book?.frontPage}`}
+  fit={'cover'}
+  align={'center'}
+  w={'72%'}
+/>
+
+<Image
+  rounded={'md'}
+  alt={book?.backPage}
+  src={`http://localhost:8080/${book?.backPage}`} 
+  fit={'cover'}
+  align={'center'}
+  w={'72%'}
+/>
         </Flex>
         
         <Stack spacing={{ base: 6, md: 10 }}>
