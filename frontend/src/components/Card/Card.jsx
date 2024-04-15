@@ -13,27 +13,27 @@ import {
 import { Link } from 'react-router-dom'
 
   
-  const Card = ({title,author,frontPage,id,edition}) => {
+  const Card = ({title,author,frontPage,id,edition,owner}) => {
     return (
         <Link to={`/book/${id}`}>
-          <Center py={6}>
-        <Box
-          maxW={'340px'}
-          w={'full'}
-          // eslint-disable-next-line react-hooks/rules-of-hooks
+          <Center  mt={6}>
+          <Box
+        maxW={"320px"}
+          // w={'full'}
           bg={useColorModeValue('white', 'gray.900')}
           boxShadow={'2xl'}
-          rounded={'md'}
-          p={6}
+          rounded={'lg'}
+        
           overflow={'hidden'}>
-          <Box h={'210x'} bg={'gray.100'} mt={-6} mx={-6} mb={6} pos={'relative'}>
+
             <Image
+              w={'full'}
+              height={'60%'}
               src={frontPage}
               fill
               alt={title}
             />
-          </Box>
-          <Stack>
+          <Stack p={6}>
             <Text
               color={'green.500'}
               textTransform={'uppercase'}
@@ -45,7 +45,7 @@ import { Link } from 'react-router-dom'
             <Heading
               // eslint-disable-next-line react-hooks/rules-of-hooks
               color={useColorModeValue('gray.700', 'white')}
-              fontSize={'2xl'}
+              fontSize={'md'}
               fontFamily={'body'}>
               {title}
             </Heading>
@@ -53,10 +53,10 @@ import { Link } from 'react-router-dom'
               {edition}
             </Text>
           </Stack>
-          <Stack mt={6} direction={'row'} spacing={4} align={'center'}>
-            <Avatar src={'https://avatars0.githubusercontent.com/u/1164541?v=4'} />
+          <Stack m={4} direction={'row'} spacing={4} align={'center'}>
+            <Avatar name={owner} />
             <Stack direction={'column'} spacing={0} fontSize={'sm'}>
-              <Text fontWeight={600}>{author}</Text>
+              <Text fontWeight={600}>{owner}</Text>
               <Text color={'gray.500'}>{id}</Text>
             </Stack>
           </Stack>
