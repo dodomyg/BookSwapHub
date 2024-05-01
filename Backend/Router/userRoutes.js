@@ -20,6 +20,9 @@ router.post("/register",async(req,resp)=>{
         if (existingUsername) {
             return resp.status(400).json({ error: "Username or email already taken" });
         }
+        if (!/^\d{12}$/.test(adhaarNum)) { // Regular expression for exactly 12 digits
+            return resp.status(400).json({ error: "Aadhaar number must contain exactly 12 digits" });
+        }
         const salt =await bcrypt.genSalt(10)
         const hashedPassword =await bcrypt.hash(password,salt);
 
