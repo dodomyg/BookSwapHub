@@ -12,7 +12,7 @@ try {
     if(!token){
         return resp.status(404).json({message:"Un-authorized"})
     }
-    const decoded=jwt.verify(token,process.env.KEY)
+    const decoded=jwt.verify(token,'minProject16')
     const loggedInUser = await USER.findById(decoded.id).select("-password")
     req.userId = loggedInUser._id
 

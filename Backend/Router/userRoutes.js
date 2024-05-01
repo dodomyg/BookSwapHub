@@ -51,7 +51,7 @@ router.post('/login', async (req, resp) => {
         if (!comparePw) {
             return resp.status(400).json({ error: "Incorrect Password" });
         }
-        const token = await jwt.sign({id:alreadyUser._id},process.env.KEY,{expiresIn:'5h'})
+        const token = await jwt.sign({id:alreadyUser._id},'minProject16',{expiresIn:'5h'})
         resp.cookie("jwtToken",token,{path:'/',httpOnly:true,sameSite:'lax',expires:new Date(Date.now()+1000*21600)})
         resp.status(201).json({ message: "User Logged In", alreadyUser, token });
 
