@@ -21,6 +21,7 @@
     "nodemon": "^3.0.3"
   },
   "dependencies": {
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.5"
   }
 }

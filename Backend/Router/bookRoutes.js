@@ -50,21 +50,24 @@ const storage = multer.diskStorage({
 //get all books which are available for exchange
 router.get('/allBooks', verifyToken, async (req, resp) => {
   try {
-      let query = { isAvailable: true , requester:null}
+    let query = { isAvailable: true, requester: null };
 
-      if (req.query.search) {
-          const searchRegex = new RegExp(req.query.search, 'i');
-          query.$or = [
-              { title: searchRegex },
-              { author: searchRegex },
-              { category: searchRegex }
-          ];
-      }
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query.$or = [
+        { title: searchRegex },
+        { author: searchRegex },
+      ];
+    }
 
-      const getAllBooks = await BOOK.find(query).populate("owner", "username email");
-      resp.status(200).json(getAllBooks);
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+
+    const getAllBooks = await BOOK.find(query).populate('owner', 'username email');
+    resp.status(200).json(getAllBooks);
   } catch (error) {
-      resp.status(500).json({ message: error.message });
+    resp.status(500).json({ message: error.message });
   }
 });
 

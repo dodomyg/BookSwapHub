@@ -25,6 +25,7 @@ export const UserProvider=({children})=>{
     },[])
 
     const [chat, setChat] = useState([]);
+    const [fine,setFine]=useState(false)
     const [user,setUser]=useState(null)
-    return <UserContext.Provider value={{user,setUser , chat, setChat}}>{children}</UserContext.Provider>
+    return <UserContext.Provider value={{user,setUser,fine,setFine , chat, setChat}}>{children}</UserContext.Provider>
 }

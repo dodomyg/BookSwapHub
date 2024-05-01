@@ -1,47 +1,59 @@
-import { Flex } from '@chakra-ui/react'
-import { Card, CardBody, Heading, Text, Stack, Image, Button, CardFooter,HStack,useToast } from '@chakra-ui/react'
-import axios from 'axios'
-import React, { useContext, useEffect, useState } from 'react'
-import { UserContext } from '../../context/UserContext'
+import {
+  Card,
+  CardBody,
+  Heading,
+  Text,
+  Stack,
+  Image,
+  Button,
+  CardFooter,
+  HStack,
+  useToast,
+  Flex,
+} from '@chakra-ui/react';
+import axios from 'axios';
+import React, { useContext, useEffect, useState } from 'react';
+import { UserContext } from '../../context/UserContext';
+import CountdownTimer from './CountdownTimer';
 
 const Holdings = () => {
+  const [holdings, setHoldings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { user,fine } = useContext(UserContext);
+  const toast = useToast();
+  const [disableReturn, setDisableReturn] = useState({});
 
-
-  const [holdings,setHoldings]=useState([])
-  const [loading,setLoading]=useState(false)
-  const {user}=useContext(UserContext)
-  const toast = useToast()
-
-  useEffect(()=>{
-    
-      const getHoldings=async()=>{
-        try {
-          setLoading(true)
-          const resp = await axios.get(`http://localhost:8080/api/books/my/holdings`,{withCredentials:true})
-          setHoldings(resp.data)
-          setLoading(false)
-        } catch (error) {
-          setLoading(false)
-          console.log(error);
-        }
+  useEffect(() => {
+    const getHoldings = async () => {
+      try {
+        setLoading(true);
+        const resp = await axios.get(
+          'http://localhost:8080/api/books/my/holdings',
+          { withCredentials: true }
+        );
+        setHoldings(resp.data);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.error(error);
       }
+    };
 
-      getHoldings()
-      
-    
-  },[])
+    getHoldings();
+  }, []);
 
-  const returnBook=async(id)=>{
+  const returnBook = async (id) => {
     try {
-      const resp = await axios.post(`http://localhost:8080/api/books/return/${id}`,{withCredentials:true})
-      console.log(resp.data);
+      const resp = await axios.post(`http://localhost:8080/api/books/return/${id}`, {
+        withCredentials: true,
+      });
       toast({
-        title:resp.data.message,
-        status:'success',
-        duration:2000
-      })
+        title: resp.data.message,
+        status: 'success',
+        duration: 2000,
+      });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       if (error.response) {
         toast({
           title: error.response.data.error || 'Server error',
@@ -65,37 +77,42 @@ const Holdings = () => {
         });
       }
     }
-  }
+  };
 
-if(!user) return;
-if(loading)return <h1>loading</h1>
+  const handleTimerEnd = (bookId) => {
+    setDisableReturn((prev) => ({ ...prev, [bookId]: true }));
+  };
+
+  if (!user) return null;
+  if (loading) return <h1>Loading...</h1>;
+
   return (
-    <div>
-        <Flex flexDir={"column"} alignItems={"center"} gap={5}>
-        <Text fontWeight={"600"} fontSize={'21px'}>My Holdings</Text>
-        {!loading && holdings.length===0 ? <h1 style={{width:"850px",textAlign:"center"}}>You are not holding any books right now</h1> : !loading && holdings.map((book)=>(
+    <Flex flexDir={'column'} alignItems={'center'} gap={5}>
+      <Text fontWeight={'600'} fontSize={'21px'}>
+        My Holdings
+      </Text>
+      {!loading && holdings.length === 0 ? (
+        <h1 style={{ width: '850px', textAlign: 'center' }}>You are not holding any books right now</h1>
+      ) : (
+        holdings.map((book) => (
           <Card
-          key={book?._id}
-          width={{ base: '100%', sm: "850px" }}
-          direction={{ base: 'column', sm: 'row' }}
-          overflow='hidden'
-          variant='outline'
-        >
-          <Image
-            objectFit='cover'
-            maxW={{ base: '100%', sm: '130px' }}
-            src={book?.frontPage}
-            alt='Caffe Latte'
-          />
-        
-          <Stack>
+            key={book._id}
+            width={{ base: '100%', sm: '850px' }}
+            direction={{ base: 'column', sm: 'row' }}
+            overflow='hidden'
+            variant='outline'
+          >
+            <Image
+              objectFit='cover'
+              maxW={{ base: '100%', sm: '130px' }}
+              src={book.frontPage}
+              alt='Book Cover'
+            />
+            <Stack>
             <CardBody>
-              <Heading size='md'>{book?.title}</Heading>
-        
-              <Text py='1'>
-                {book?.author}
-              </Text>
-            </CardBody>
+                  <Heading size='md'>{book?.title}</Heading>
+                  <Text py='1'>{book?.author}</Text>
+          </CardBody>
 
             <HStack ml={5} alignItems={'center'}>
               <Text>Approved by the Owner : </Text>
@@ -113,18 +130,31 @@ if(loading)return <h1>loading</h1>
             Isbn: {book?.isbn}
           </Text>
           </HStack>
-        
-            <CardFooter display={"flex"} gap={5}>
-              <Button type='button' onClick={()=>returnBook(book?._id)} colorScheme='twitter' >
-                Return Book
-              </Button>
-            </CardFooter>
-          </Stack>
-        </Card>
-        ))}
-        </Flex>
-    </div>
-  )
-}
+              
+              <CardFooter display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
+                <Button
+                  type='button'
+                  colorScheme='twitter'
+                  onClick={() => returnBook(book._id)}
+                  isDisabled={disableReturn[book._id] || fine===true} // Check if the book's return is disabled
+                >
+                  Return Book
+                </Button>
+                <HStack>
+                <CountdownTimer
+                  bookId={book._id}
+                  book={book}
+                  initialDurationInSeconds={691200} // 8 days in seconds
+                  onTimerEnd={() => handleTimerEnd(book._id)}
+                />
+                </HStack>
+              </CardFooter>
+            </Stack>
+          </Card>
+        ))
+      )}
+    </Flex>
+  );
+};
 
-export default Holdings
+export default Holdings;
