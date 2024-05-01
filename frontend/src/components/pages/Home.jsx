@@ -1,30 +1,54 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext'
 import Card from '../Card/Card';
-import {Flex,Box,Image,Text,Input, IconButton,InputGroup,InputRightElement, Stack, Link} from "@chakra-ui/react"
+import {Flex,Box,Image,Text,Input, IconButton,InputGroup,InputRightElement, Stack, HStack,Select, Button} from "@chakra-ui/react"
 import axios from "axios"
 import { CiSearch } from "react-icons/ci";
 
 
 const Home = () => {
+  const [category, setCategory] = useState('');
 
   const {user}=useContext(UserContext)
   const [unAv,setUnav]=useState([])
   const [books ,setBooks]=useState([])
   const [loading , setLoading]=useState(false)
   const [search,setSearch]=useState("")
-  const fetchBooks = async ()=>{
+  const categories = [
+    'Fiction',
+    'Adventure',
+    'Non-Fiction',
+    'Education',
+    'Mystery',
+    'Fantasy',
+    'Drama',
+    'Romance',
+    'Thriller',
+    'Kids',
+    'Other',
+  ];
+  
+  const fetchBooks = async () => {
+    setLoading(true);
     try {
-      setLoading(true)
-        const resp = await axios.get(`http://localhost:8080/api/books/allBooks?search=${search}`,{withCredentials:true})
-        setBooks(resp.data)
-        setLoading(false)
-        setSearch("")
+      const query = [];
+      if (search) {
+        query.push(`search=${search}`);
+      }
+      if (category) {
+        query.push(`category=${category}`);
+      }
+      const queryString = query.length > 0 ? `?${query.join('&')}` : '';
+      const response = await axios.get(`http://localhost:8080/api/books/allBooks${queryString}`, {
+        withCredentials: true,
+      });
+      setBooks(response.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-}
-
+  };
 
 
 
@@ -95,12 +119,28 @@ const Home = () => {
 </form>
         </Box>
       </Box>
+      <HStack alignItems={"center"} justifyContent={"space-between"} my={10} px={10}>
       <Text my={2} textAlign={"center"} fontSize={'25px'}>All Available Books</Text>
+<HStack>
+<Select width={"200px"}
+            placeholder="All Books"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </Select>
+          <Button onClick={fetchBooks}>Filter</Button>
+</HStack>
+      </HStack>
       {books.length===0 && <Text textAlign={"center"} my={4}  fontSize={'25px'} color={"gray.400"}>No Books Found , try searching by Book title or author</Text>}
       <Flex mx={10} flexDir={"row"} flexWrap={"wrap"} alignItems={'start'}justifyContent={'flex-start'}  gap={10}>
           { 
           !loading && books.map((book)=>{
-            return <Card owner={book.owner.username} key={book._id} title={book.title} author={book.author} id={book._id} frontPage={book.frontPage} edition={book.edition}/>
+            return <Card owner={book?.owner.username} key={book?._id} title={book?.title} author={book?.author} id={book._id} frontPage={book?.frontPage} edition={book?.edition}/>
           })}
       </Flex>
         

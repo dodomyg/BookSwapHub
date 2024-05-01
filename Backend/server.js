@@ -11,6 +11,8 @@ const cookieParser=require('cookie-parser')
 
 
 
+
+
 const app = express()
 app.use(cors({
     origin:"http://localhost:3000",
@@ -28,13 +30,30 @@ app.use("/api/message",messageRoutes)
 
 const PORT = process.env.PORT || 8080
 
+const serverStart = app.listen(PORT,()=>{
+    console.log('====================================');
+    console.log(`Backend is running and mongo connected ...`);
+    console.log('====================================');
+})
+
 
 mongoose.connect(process.env.MONGO_LINK).then(()=>{
-    app.listen(PORT,()=>{
-        console.log('====================================');
-        console.log(`Backend is running on ${PORT} and mongodb connected`);
-        console.log('====================================');
-    })
+    serverStart
 }).catch((err)=>{
     console.log(err);
 })
+
+const io = require('socket.io')(serverStart, {
+    pingTimeOut: 60000,
+    cors: {
+      origin: "http://localhost:3000",
+    },
+}) 
+
+io.on('connection', (socket) => {
+    console.log('Connected to socket.io');
+})
+
+
+
+

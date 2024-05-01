@@ -53,7 +53,6 @@ const modalBodyRef = useRef(null);
             isClosable: true,
         });
     } else if (error.request) {
-        
         toast({
             title: "Network error",
             status: 'error',
@@ -157,7 +156,12 @@ const modalBodyRef = useRef(null);
     }
   }
 
+  
+
   const name = user?._id !== owner?._id ? <>{owner?.username}</> : 'View Messages'
+  useEffect(() => {
+    
+  },[])
 
   return (
     <>
