@@ -57,3 +57,33 @@ To run the BookSwap Hub locally, follow these steps:
    ```bash
    git clone https://github.com/your-username/bookswap-hub.git
    cd bookswap-hub
+Install dependencies:
+
+bash
+Copy code
+npm install
+Set up environment variables:
+
+Create a .env file in the root directory.
+Define environment variables such as database connection strings, API keys, etc.
+Start the development server:
+
+bash
+Copy code
+npm start
+Open your browser and visit http://localhost:3000 to view the application.
+
+Usage
+Sign Up / Sign In: Create an account or sign in to access the platform.
+Browse Books: Explore available books for swapping.
+Initiate Swap: Initiate a swap request with another user.
+Manage Swaps: Accept, reject, or cancel swap requests.
+Chat with Users: Communicate with other users to finalize swap details.
+Update Profile: Manage your profile and preferences.
+
+Contributing
+Contributions are welcome! Here are a few guidelines:
+
+Fork the repository and create your branch from main.
+Make sure your code follows the project's coding style.
+Issue a pull request detailing the changes made.
