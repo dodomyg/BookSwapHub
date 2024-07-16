@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState } from "react";
 import {
   Button,
   Flex,
@@ -11,18 +11,19 @@ import {
   useToast,
   Link,
   Image,
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { UserContext } from '../../context/UserContext';
+} from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
+import BookImage from "../../Images/Books.webp";
+import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 
 axios.defaults.withCredentials = true;
 
 const Login = () => {
   const toast = useToast();
-  const {setUser}=useContext(UserContext)
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const { setUser } = useContext(UserContext);
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -35,33 +36,32 @@ const Login = () => {
       );
       toast({
         title: response.data.message,
-        status: 'success',
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
-      // Redirect to the home page after successful login
       setUser(response.data.alreadyUser);
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.log(error);
       if (error.response) {
         toast({
-          title: error.response.data.error || 'Server error',
-          status: 'error',
+          title: error.response.data.error || "Server error",
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
       } else if (error.request) {
         toast({
-          title: 'Network error',
-          status: 'error',
+          title: "Network error",
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
       } else {
         toast({
-          title: 'Unexpected error',
-          status: 'error',
+          title: "Unexpected error",
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
@@ -70,12 +70,12 @@ const Login = () => {
   };
 
   return (
-    <Stack minH={'100vh'} direction={{ base: 'column', md: 'row' }}>
-      <Flex p={8} flex={1} align={'center'} justify={'center'}>
-        <Stack spacing={4} w={'full'} maxW={'md'}>
-          <Heading fontSize={'2xl'}>Sign in to your account</Heading>
+    <Stack overflow={"hidden"} h={"100vh"} justifyContent={"center"} direction={{ base: "column", md: "row" }}>
+      <Flex p={8} flex={1} align={"center"} justify={"center"}>
+        <Stack spacing={4} w={"full"} maxW={"md"}>
+          <Heading fontSize={"2xl"}>Sign in to your account</Heading>
           <form onSubmit={handleLogin}>
-            <FormControl id="email">
+            <FormControl id="username">
               <FormLabel>Username</FormLabel>
               <Input
                 type="text"
@@ -93,27 +93,27 @@ const Login = () => {
             </FormControl>
             <Stack spacing={6}>
               <Stack
-                direction={{ base: 'column', sm: 'row' }}
-                align={'start'}
-                justify={'space-between'}>
-                <Text>Dont have an account?</Text>
-                <Link color={'blue.400'} href="/register">
+                direction={{ base: "column", sm: "row" }}
+                align={"start"}
+                justify={"space-between"}
+              >
+                <Text>Don't have an account?</Text>
+                <Link color={"blue.400"} href="/register">
                   Register
                 </Link>
               </Stack>
-              <Button type="submit" colorScheme={'blue'} variant={'solid'}>
+              <Button type="submit" colorScheme={"blue"} variant={"solid"}>
                 Sign in
               </Button>
             </Stack>
           </form>
         </Stack>
       </Flex>
-      <Flex flex={1}>
+      <Flex flex={1} align={"center"} justify={"center"}>
         <Image
-          alt={'Login Image'}
-          objectFit={'cover'}
-          src={
-            'https://source.unsplash.com/1600x900/?books'}
+          alt={"Login Image"}
+          objectFit={"cover"}
+          src={BookImage}
         />
       </Flex>
     </Stack>

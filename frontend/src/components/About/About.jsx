@@ -9,10 +9,10 @@ import {
   StackDivider,
   Icon,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { IoAnalyticsSharp, IoLogoBitcoin, IoSearchSharp } from 'react-icons/io5'
-import SimpleThreeColumns from '../pages/About1'
-
+} from '@chakra-ui/react';
+import { IoAnalyticsSharp, IoLogoBitcoin, IoSearchSharp } from 'react-icons/io5';
+import SimpleThreeColumns from '../pages/About1';
+import AboutImage from "../../Images/About.webp"
 
 const Feature = ({ text, icon, iconBg }) => {
   return (
@@ -22,8 +22,8 @@ const Feature = ({ text, icon, iconBg }) => {
       </Flex>
       <Text fontWeight={600}>{text}</Text>
     </Stack>
-  )
-}
+  );
+};
 
 export default function SplitWithImage() {
   return (
@@ -41,10 +41,9 @@ export default function SplitWithImage() {
             rounded={'md'}>
             Our Story
           </Text>
-          <Heading>A digital Product design agency</Heading>
+          <Heading>Welcome to BookSwapHub</Heading>
           <Text color={'gray.500'} fontSize={'lg'}>
-            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy
-            eirmod tempor invidunt ut labore
+            BookSwapHub is a secure platform designed for book enthusiasts to easily exchange books. Our mission is to remove financial barriers to literature exploration, fostering access to a diverse range of titles. Here’s what makes BookSwapHub special:
           </Text>
           <Stack
             spacing={4}
@@ -54,17 +53,17 @@ export default function SplitWithImage() {
             <Feature
               icon={<Icon as={IoAnalyticsSharp} color={'yellow.500'} w={5} h={5} />}
               iconBg={useColorModeValue('yellow.100', 'yellow.900')}
-              text={'Business Planning'}
+              text={'Seamless Book Exchange'}
             />
             <Feature
               icon={<Icon as={IoLogoBitcoin} color={'green.500'} w={5} h={5} />}
               iconBg={useColorModeValue('green.100', 'green.900')}
-              text={'Financial Planning'}
+              text={'Diverse Title Access'}
             />
             <Feature
               icon={<Icon as={IoSearchSharp} color={'purple.500'} w={5} h={5} />}
               iconBg={useColorModeValue('purple.100', 'purple.900')}
-              text={'Market Analysis'}
+              text={'Advanced Filtering'}
             />
           </Stack>
         </Stack>
@@ -72,20 +71,12 @@ export default function SplitWithImage() {
           <Image
             rounded={'md'}
             alt={'feature image'}
-            src={
-              'https://images.unsplash.com/photo-1554200876-56c2f25224fa?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-            }
+            src={AboutImage}
             objectFit={'cover'}
           />
         </Flex>
       </SimpleGrid>
-      <SimpleThreeColumns/>
+      <SimpleThreeColumns />
     </Container>
-  )
+  );
 }
-
-
-
-
-
-
