@@ -33,6 +33,12 @@ const Register = () => {
     e.preventDefault()
     try {
       const response = await axios.post(`http://localhost:8080/api/users/register`,{username,email,password,adhaarNum:adhaarNum})
+      toast({
+        title: response.data.message,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
       console.log(response.data)
       navigate("/login")
     } catch (error) {
@@ -75,6 +81,7 @@ const Register = () => {
     <Flex
       minH={'100vh'}
       align={'center'}
+      w={'100%'}
       justify={'center'}
       bg={useColorModeValue('gray.50', 'gray.800')}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
