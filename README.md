@@ -1,4 +1,4 @@
-# BookSwap Hub
+# BookSwapHub
 
 BookSwap Hub is an application designed to facilitate the swapping of books between book lovers. It allows users to exchange books securely, communicate via chat, filter swap options based on book names and categories, and manage the entire swapping process seamlessly.
 
