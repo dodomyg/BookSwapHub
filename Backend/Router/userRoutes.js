@@ -82,7 +82,6 @@ router.get("/jwt",verifyToken,async(req,resp)=>{
 router.put('/update', verifyToken, async (req, resp) => {
     const {username,password,email} = req.body;
     const userId = req.userId;
-
     try {
         if (!userId) {
             return resp.status(404).json({ error: "Un-authorized,log in first" });

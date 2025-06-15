@@ -78,7 +78,7 @@ router.get('/:bookId',verifyToken,async(req,resp)=>{
     try {
         const books = await BOOK.findOne({ isAvailable: true,_id:bookId }).populate('owner', 'username email');
         if(!books){
-            return  resp.status(404).json({error:"No book Found"});  
+            return  resp.status(404).json({message:"No book Found"});  
         }
         resp.status(200).json(books);
     } catch (error) {
@@ -171,7 +171,7 @@ router.get('/:bookId', verifyToken, async (req, resp) => {
 router.delete('/:bookId', verifyToken, async (req, resp) => {
   try {
     const book = await BOOK.findById(req.params.bookId);
-
+    
     if (!book) return resp.status(404).json({ error: 'Book not found' });
     
     if (book.isAvailable && !book.holder && !book.requester) {
