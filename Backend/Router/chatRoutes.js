@@ -37,6 +37,9 @@ router.post('/createChat/:id',verifyToken,async(req,resp)=>{
 router.get('/getChats',verifyToken,async(req,resp)=>{
     const userId = req.userId
     try {
+        if(!userId){
+            return resp.status(404).json({error:"Un-authorized,log in first"})
+        }
         const getCHats = await CHAT.find({users:{$elemMatch:{$eq:userId}}}).populate("users","username")
         resp.status(200).json(getCHats)
     } catch (error) {
