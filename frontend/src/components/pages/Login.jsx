@@ -11,19 +11,20 @@ import {
   useToast,
   Link,
   Image,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import BookImage from "../../Images/Books.webp";
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
+import BookImage from "../../Images/Books.webp";
 
 axios.defaults.withCredentials = true;
 
 const Login = () => {
   const toast = useToast();
   const { setUser } = useContext(UserContext);
-  const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -34,85 +35,92 @@ const Login = () => {
         { username, password },
         { withCredentials: true }
       );
+
       toast({
-        title: response.data.message,
+        title: "Login successful",
+        description: response.data.message,
         status: "success",
         duration: 3000,
         isClosable: true,
       });
+
       setUser(response.data.alreadyUser);
       navigate("/");
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      let message = "Unexpected error";
       if (error.response) {
-        toast({
-          title: error.response.data.error || "Server error",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+        message = error.response.data.error || "Server error";
       } else if (error.request) {
-        toast({
-          title: "Network error",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: "Unexpected error",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+        message = "Network error";
       }
+
+      toast({
+        title: "Login failed",
+        description: message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   return (
-    <Stack overflow={"hidden"} h={"100vh"} justifyContent={"center"} direction={{ base: "column", md: "row" }}>
-      <Flex p={8} flex={1} align={"center"} justify={"center"}>
-        <Stack spacing={4} w={"full"} maxW={"md"}>
-          <Heading fontSize={"2xl"}>Sign in to your account</Heading>
+    <Stack h="100vh" direction={{ base: "column", md: "row" }}>
+      {/* LEFT SIDE FORM */}
+      <Flex p={8} flex={1} align="center" justify="center">
+        <Stack spacing={6} w="full" maxW="md">
+          <Heading fontSize="3xl" textAlign="center" color="blue.600">
+            Welcome Back to BookSwapHub 📚
+          </Heading>
+          <Text fontSize="md" color="gray.600" textAlign="center">
+            Sign in to explore and exchange knowledge.
+          </Text>
+
           <form onSubmit={handleLogin}>
-            <FormControl id="username">
-              <FormLabel>Username</FormLabel>
-              <Input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </FormControl>
-            <FormControl id="password">
-              <FormLabel>Password</FormLabel>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </FormControl>
-            <Stack spacing={6}>
-              <Stack
-                direction={{ base: "column", sm: "row" }}
-                align={"start"}
-                justify={"space-between"}
-              >
-                <Text>Don't have an account?</Text>
-                <Link color={"blue.400"} href="/register">
-                  Register
-                </Link>
-              </Stack>
-              <Button type="submit" colorScheme={"blue"} variant={"solid"}>
-                Sign in
+            <Stack spacing={4}>
+              <FormControl id="username" isRequired>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  placeholder="Enter your username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl id="password" isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  placeholder="Enter your password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </FormControl>
+
+              <Button type="submit" colorScheme="blue" size="lg" fontWeight="bold">
+                Sign In
               </Button>
+
+              <Text fontSize="sm" textAlign="center">
+                Don’t have an account?{" "}
+                <Link href="/register" color="blue.500" fontWeight="medium">
+                  Register here
+                </Link>
+              </Text>
             </Stack>
           </form>
         </Stack>
       </Flex>
-      <Flex flex={1} align={"center"} justify={"center"}>
+
+      {/* RIGHT SIDE IMAGE */}
+      <Flex flex={1} display={{ base: "none", md: "flex" }}>
         <Image
-          alt={"Login Image"}
-          objectFit={"cover"}
+          alt="Books background"
+          objectFit="cover"
+          w="100%"
+          h="100%"
           src={BookImage}
         />
       </Flex>

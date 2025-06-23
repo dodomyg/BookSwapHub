@@ -1,31 +1,35 @@
 import { createContext, useEffect, useState } from "react";
-import axios from "axios"
-axios.defaults.withCredentials = true
+import axios from "axios";
 
-export const UserContext = createContext()
+// Axios setup
+axios.defaults.withCredentials = true;
 
+// Create the context
+export const UserContext = createContext();
 
-export const UserProvider=({children})=>{
+// Provider component
+export const UserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);      // Logged in user
+  const [fine, setFine] = useState(false);     // Fine state (e.g. for overdue books)
+  const [chat, setChat] = useState([]);        // Chat state (optional if used)
 
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data } = await axios.get('http://localhost:8080/api/users/jwt');
+        setUser(data);
+        console.log("User loaded:", data);
+      } catch (error) {
+        console.error("Failed to fetch user:", error?.response?.data?.error || error.message);
+      }
+    };
 
+    getUser();
+  }, []);
 
-    useEffect(()=>{
-        const getUser=async()=>{
-            try {
-                const resp =await axios.get('http://localhost:8080/api/users/jwt',{withCredentials:true})
-                console.log(resp.data);
-                setUser(resp.data)
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        getUser()
-
-        
-    },[])
-
-    const [chat, setChat] = useState([]);
-    const [fine,setFine]=useState(false)
-    const [user,setUser]=useState(null)
-    return <UserContext.Provider value={{user,setUser,fine,setFine , chat, setChat}}>{children}</UserContext.Provider>
-}
+  return (
+    <UserContext.Provider value={{ user, setUser, fine, setFine, chat, setChat }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
