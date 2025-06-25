@@ -12,17 +12,28 @@ import {
   Tooltip,
   useDisclosure,
   Icon,
+  Toast,
 } from "@chakra-ui/react";
-import { FaPaperPlane, FaRobot } from "react-icons/fa";
+import { FaPaperPlane, FaRobot, FaTrash } from "react-icons/fa";
 import { UserContext } from "../../context/UserContext";
 import PrefModal from "../PrefModal/PrefModal";
 import axios from "axios";
 import Markdown from "react-markdown";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+} from "@chakra-ui/react";
 
 axios.defaults.withCredentials = true;
 
 const BookChat = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const prefModal = useDisclosure();
+  const deleteModal = useDisclosure();
   const { user, setUser } = useContext(UserContext);
   const [pref, setPref] = useState([]);
   const [openTooltip, setOpenTooltip] = useState(false);
@@ -49,6 +60,7 @@ const BookChat = () => {
     };
     fetchSessionData();
   }, []);
+  const cancelRef = useRef(null);
 
   useEffect(() => {
     if (user?.preferences) {
@@ -106,6 +118,29 @@ const BookChat = () => {
     }
   };
 
+  const deleteSession = async () => {
+    try {
+      const resp = await axios.put(
+        `http://localhost:8080/api/aiChat/deleteSession?session_id=${sessionData?.sessionId}`,
+        {},
+        { withCredentials: true }
+      );
+      if (resp?.data?.message === "Session cleared successfully") {
+        setMsgs([]);
+        Toast({
+          title: "Session cleared",
+          description: "Your chat session has been cleared.",
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      setMsgs([]);
+    }
+  };
+
   const bgUser = useColorModeValue("blue.100", "blue.700");
   const bgBot = useColorModeValue("gray.100", "gray.700");
 
@@ -117,15 +152,15 @@ const BookChat = () => {
           placement="left-end"
           isOpen={!openTooltip}
         >
-          <Button onClick={onOpen} colorScheme="teal">
+          <Button onClick={prefModal.onOpen} colorScheme="teal">
             Set Preferences
           </Button>
         </Tooltip>
       </Box>
 
       <PrefModal
-        isOpen={isOpen}
-        onClose={onClose}
+        isOpen={prefModal.isOpen}
+        onClose={prefModal.onClose}
         currentPrefs={pref}
         setPref={setPref}
         setUser={setUser}
@@ -241,6 +276,57 @@ const BookChat = () => {
         <Button colorScheme="teal" onClick={sendMessage}>
           <FaPaperPlane />
         </Button>
+        <Button
+          disabled={msgs?.length === 0}
+          colorScheme="red"
+          onClick={deleteModal.onOpen}
+        >
+          <FaTrash />
+        </Button>
+
+        <AlertDialog
+          isOpen={deleteModal.isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={deleteModal.onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Delete Customer
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                Are you sure? You can't undo this action afterwards.
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button ref={cancelRef} onClick={deleteModal.onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  colorScheme="red"
+                  onClick={() => {
+                    if (msgs?.length > 0) {
+                      deleteSession();
+                      deleteModal.onClose();
+                    } else {
+                      Toast({
+                        title: "No messages to delete",
+                        status: "info",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                      return;
+                    }
+                  }}
+                  ml={3}
+                >
+                  Delete
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
       </HStack>
     </Container>
   );

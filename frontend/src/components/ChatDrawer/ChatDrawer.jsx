@@ -22,43 +22,53 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-} from '@chakra-ui/react';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-import { UserContext } from '../../context/UserContext';
+} from "@chakra-ui/react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 
 axios.defaults.withCredentials = true;
 
 function ChatDrawer({ owner }) {
-  const { user, chat, setChat } = useContext(UserContext);
   const [feed, setFeed] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
+  const {user}=useContext(UserContext)
   const modalBodyRef = useRef(null);
   const [messages, setMessages] = useState([]);
-  const [name,setName]=useState('')
-  const [selectedChat, setSelectedChat] = useState(null); 
-  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
-  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
-const toast = useToast();
-  
+  const [name, setName] = useState("");
+  const [selectedChat, setSelectedChat] = useState(null);
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose,
+  } = useDisclosure();
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose,
+  } = useDisclosure();
+  const toast = useToast();
 
-  const openChat = async(otherId,name) => {
-    if(otherId===user._id) return
-    if(!otherId) return
-    if(!name) return
+  const openChat = async (otherId, name) => {
+    if (otherId === user._id) return;
+    if (!otherId) return;
+    if (!name) return;
     onDrawerClose(); // Close the drawer
     onModalOpen(); // Open the modal
     try {
-      const resp = await axios.post(`http://localhost:8080/api/chat/createChat/${otherId}`, { withCredentials: true });
-      // console.log(resp.data);
-      setChat([...chat, resp.data]);
-      setName(name)
-      setSelectedChat(resp.data._id);
+      const resp = await axios.post(
+        `http://localhost:8080/api/chat/createChat/${otherId}`,
+        { withCredentials: true }
+      );
+      console.log(resp.data,"resp.data")
+      // setChat([...chat, resp.data]);
+      setName(name);
+      setSelectedChat(resp?.data[0]?._id);
       toast({
         title: `Chatting with ${name}`,
-        status: 'success',
+        status: "success",
         duration: 1500,
-      })
+      });
     } catch (error) {
       console.log(error);
     }
@@ -67,17 +77,27 @@ const toast = useToast();
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const resp = await axios.get(`http://localhost:8080/api/chat/getChats`, { withCredentials: true });
+        const resp = await axios.post(
+          `http://localhost:8080/api/chat/createChat/${owner?._id}`,
+          { withCredentials: true }
+        );
         setFeed(resp.data);
       } catch (error) {
         console.log(error);
       }
     };
+    fetchFeed();
+  }, [selectedChat, modalBodyRef]);
 
+  useEffect(() => {
     const fetchChats = async () => {
+      console.log(selectedChat, "selectedChat");
+      if (!selectedChat) return;
       try {
-        const resp = await axios.get(`http://localhost:8080/api/message/allMessages/${selectedChat}`, { withCredentials: true });
-        // console.log(resp.data);
+        const resp = await axios.get(
+          `http://localhost:8080/api/message/allMessages/${selectedChat}`,
+          { withCredentials: true }
+        );
         setMessages(resp.data);
         if (modalBodyRef.current) {
           modalBodyRef.current.scrollTop = modalBodyRef.current.scrollHeight;
@@ -85,87 +105,83 @@ const toast = useToast();
       } catch (error) {
         console.log(error);
       }
-    }
-  
-    fetchFeed();
+    };
     fetchChats();
-  }, [selectedChat,modalBodyRef]);
+  }, [selectedChat]);
 
-  const sendText=async(e)=>{
+  const sendText = async (e) => {
+    if (e.key !== "Enter" || !newMessage.trim() || !selectedChat) return;
+
     try {
-     if (e.key === 'Enter'){
-      const resp = await axios.post(`http://localhost:8080/api/message/sendMessage/${chat[chat.length - 1]._id}`,{message:newMessage},{withCredentials:true})
-      // console.log(resp.data)
+      const resp = await axios.post(
+        `http://localhost:8080/api/message/sendMessage/${selectedChat}`,
+        { message: newMessage },
+        { withCredentials: true }
+      );
+
       toast({
         title: `Message sent to ${name}`,
-        status: 'success',
+        status: "success",
         duration: 1500,
-      })
-      setMessages([...messages,resp.data])
-      setNewMessage('')
+      });
+
+      setMessages((prev) => [...prev, resp.data]);
+      setNewMessage("");
       if (modalBodyRef.current) {
         modalBodyRef.current.scrollTop = modalBodyRef.current.scrollHeight;
       }
-     }
-      
     } catch (error) {
-      if (error.response) {
-        toast({
-            title: error.response.data.error || "Server error",
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-        });
-    } else if (error.request) {
-        
-        toast({
-            title: "Network error",
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-        });
-    } else {
-        
-        toast({
-            title: "Unexpected error",
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-        });
+      toast({
+        title: error?.response?.data?.error || "Failed to send message",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
-    }
-  }
-  
+  };
 
   if (!user) return null;
 
   return (
     <>
-      <Button colorScheme='teal' position='fixed' top='80px' right='10' onClick={onDrawerOpen}>
+      <Button
+        colorScheme="teal"
+        position="fixed"
+        top="80px"
+        right="10"
+        onClick={onDrawerOpen}
+      >
         View Messages
       </Button>
-      <Drawer isOpen={isDrawerOpen} placement='right' onClose={onDrawerClose}>
+      <Drawer isOpen={isDrawerOpen} placement="right" onClose={onDrawerClose}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>View Messages</DrawerHeader>
           <DrawerBody>
-            <Flex flexDir='column' gap={5}>
+            <Flex flexDir="column" gap={5}>
               {feed.map((chat) => {
                 // Find the other participant in the chat
                 let otherParticipant = null;
                 if (chat.users) {
-                  otherParticipant = chat.users.find((participant) => participant._id !== user._id);
+                  otherParticipant = chat.users.find(
+                    (participant) => participant._id !== user._id
+                  );
                 }
                 if (otherParticipant) {
                   return (
                     <Box
                       key={chat._id}
-                      onClick={() => openChat(otherParticipant._id,otherParticipant?.username)}
-                      cursor='pointer'
-                      _hover={{ bg: 'gray.200' }}
+                      onClick={() =>
+                        openChat(
+                          otherParticipant._id,
+                          otherParticipant?.username
+                        )
+                      }
+                      cursor="pointer"
+                      _hover={{ bg: "gray.200" }}
                       p={3}
-                      bg='gray.100'
+                      bg="gray.100"
                       borderRadius={10}
                     >
                       {otherParticipant.username}
@@ -178,28 +194,68 @@ const toast = useToast();
             </Flex>
           </DrawerBody>
           <DrawerFooter>
-            <Button colorScheme='teal' variant='outline' mr={3} onClick={onDrawerClose}>
+            <Button
+              colorScheme="teal"
+              variant="outline"
+              mr={3}
+              onClick={onDrawerClose}
+            >
               Cancel
             </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
 
-      
       <Modal isOpen={isModalOpen} onClose={onModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{name}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody my={12} maxH={'45vh'} overflowY="scroll" ref={modalBodyRef}>
+          <ModalBody
+            my={12}
+            maxH={"45vh"}
+            overflowY="scroll"
+            ref={modalBodyRef}
+          >
             <Stack direction="column">
-              {messages.length===0 ? <Text textAlign={'center'} color={'gray'} fontSize={'xl'} fontWeight={'bold'}>No messages yet</Text> : messages.map((message) => (
-                <Flex key={message._id} justify={message.sender._id=== user?._id ? 'flex-end' : 'flex-start'}>
-                  <Text bg={message.sender._id=== owner._id ? ' gray.200' : 'blue.500'}  color={message.sender._id=== owner._id ? 'black' : 'white'} borderRadius="lg" p={2} maxW="70%" wordBreak="break-word">
-                    {message.message}
-                  </Text>
-                </Flex>
-              ))}
+              {messages.length === 0 ? (
+                <Text
+                  textAlign={"center"}
+                  color={"gray"}
+                  fontSize={"xl"}
+                  fontWeight={"bold"}
+                >
+                  No messages yet
+                </Text>
+              ) : (
+                messages.map((message) => (
+                  <Flex
+                    key={message._id}
+                    justify={
+                      message.sender._id === user?._id
+                        ? "flex-end"
+                        : "flex-start"
+                    }
+                  >
+                    <Text
+                      bg={
+                        message.sender._id === owner._id
+                          ? " gray.200"
+                          : "blue.500"
+                      }
+                      color={
+                        message.sender._id === owner._id ? "black" : "white"
+                      }
+                      borderRadius="lg"
+                      p={2}
+                      maxW="70%"
+                      wordBreak="break-word"
+                    >
+                      {message.message}
+                    </Text>
+                  </Flex>
+                ))
+              )}
             </Stack>
           </ModalBody>
           <ModalFooter>
@@ -212,7 +268,6 @@ const toast = useToast();
                 mt={4}
               />
             </FormControl>
-            
           </ModalFooter>
         </ModalContent>
       </Modal>

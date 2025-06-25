@@ -31,7 +31,6 @@ export const getUser = async (setUser) => {
   try {
     const { data } = await axios.get("http://localhost:8080/api/users/jwt");
     setUser(data);
-    console.log("User loaded:", data);
   } catch (error) {
     console.error(
       "Failed to fetch user:",

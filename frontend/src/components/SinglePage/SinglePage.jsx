@@ -85,7 +85,7 @@ const SinglePage = () => {
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={10}>
         <VStack spacing={6} align="center">
           <Image
-            src={`http://localhost:8080/${book?.frontPage}`}
+            src={book?.frontPage}
             alt="Front Page"
             rounded="md"
             w="100%"
@@ -94,7 +94,7 @@ const SinglePage = () => {
             boxShadow="md"
           />
           <Image
-            src={`http://localhost:8080/${book?.backPage}`}
+            src={book?.backPage}
             alt="Back Page"
             rounded="md"
             w="100%"
