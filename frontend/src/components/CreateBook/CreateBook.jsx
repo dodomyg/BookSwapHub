@@ -12,36 +12,45 @@ import {
   FormHelperText,
   FormLabel,
   Flex,
+  Image,
+  Heading,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react';
 import { UserContext } from '../../context/UserContext';
 import axios from 'axios';
 import { FaCloudUploadAlt } from 'react-icons/fa';
+
 axios.defaults.withCredentials = true;
 
 const CreateBook = () => {
   const { user } = useContext(UserContext);
-  const [categories, setCategories] = useState(['Select Category']);
-  const [title, setTiltle] = useState('');
+  const [categories, setCategories] = useState(['']);
+  const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [isbn, setIsbn] = useState('');
-  const frontInputRef = useRef(null);
-  const backInputRef = useRef(null);
+  const [edition, setEdition] = useState('');
   const [frontPage, setFrontPage] = useState('');
   const [backPage, setBackPage] = useState('');
   const [frontPreview, setFrontPreview] = useState('');
   const [backPreview, setBackPreview] = useState('');
-  const [edition, setEdition] = useState('');
+
   const toast = useToast();
+  const frontInputRef = useRef(null);
+  const backInputRef = useRef(null);
 
   const handleAddCategory = () => {
     setCategories([...categories, '']);
   };
 
   const handleCategoryChange = (index, value) => {
-    const updatedCategories = [...categories];
-    updatedCategories[index] = value;
-    setCategories(updatedCategories);
+    const updated = [...categories];
+    updated[index] = value;
+    setCategories(updated);
   };
+
+  const handleClickFront = () => frontInputRef.current.click();
+  const handleClickBack = () => backInputRef.current.click();
 
   const onFileChange = (e, type) => {
     const file = e.target.files[0];
@@ -50,12 +59,12 @@ const CreateBook = () => {
       if (type === 'front') {
         setFrontPage(file);
         setFrontPreview(reader.result);
-      } else if (type === 'back') {
+      } else {
         setBackPage(file);
         setBackPreview(reader.result);
       }
     };
-    reader.readAsDataURL(file);
+    if (file) reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -69,17 +78,16 @@ const CreateBook = () => {
       formData.append('edition', edition);
       formData.append('frontPage', frontPage);
       formData.append('backPage', backPage);
-      console.log(formData);
+
       const resp = await axios.post(
-        `http://localhost:8080/api/books/create`,
+        'http://localhost:8080/api/books/create',
         formData,
-        { withCredentials: true },
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
         }
       );
+
       toast({
         title: resp.data.message,
         status: 'success',
@@ -88,224 +96,167 @@ const CreateBook = () => {
       });
     } catch (error) {
       console.log(error);
-      if (error.response) {
-        toast({
-          title: error.response.data.error || 'Server error',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      } else if (error.request) {
-        toast({
-          title: 'Network error',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: 'Unexpected error',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+      toast({
+        title: error?.response?.data?.error || 'Something went wrong',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
-  if (!user) {
-    return null;
-  }
-
-  const handleClickFront = () => {
-    frontInputRef.current.click();
-  };
-
-  const handleClickBack = () => {
-    backInputRef.current.click();
-  };
+  if (!user) return null;
 
   return (
-    <Box width={'100%'}>
-      <Box display={'flex'} justifyContent={'center'} mt={10}>
-        <Text fontSize={'24px'} fontWeight={600}>
-          Create a book for swapping
-        </Text>
-      </Box>
-      <Box mx={4} my={7}>
-        <form onSubmit={handleSubmit}>
-          <HStack gap={4} justifyContent={'space-between'}>
-            <div style={{ width: '48%' }}>
-              <FormControl>
-                <FormLabel>Book Title</FormLabel>
-                <Input
-                  value={title}
-                  onChange={(e) => setTiltle(e.target.value)}
-                  type="text"
-                />
-                <FormHelperText>
-                  Book title should be correct , double check before entering
-                  the title
-                </FormHelperText>
-              </FormControl>
-            </div>
-            <div style={{ width: '48%' }}>
-              <FormControl>
-                <FormLabel>Book Author</FormLabel>
-                <Input
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                  type="text"
-                />
-                <FormHelperText>Book author should be accurate</FormHelperText>
-              </FormControl>
-            </div>
-          </HStack>
-          <HStack gap={4} justifyContent={'space-between'}>
-            <div style={{ marginTop: '20px', width: '48%' }}>
-              <FormControl>
-                <FormLabel>Edition</FormLabel>
-                <Input
-                  value={edition}
-                  onChange={(e) => setEdition(e.target.value)}
-                  type="text"
-                />
-                <FormHelperText>
-                  Enter the edition of the book, such as first edition, second
-                  edition, etc.
-                </FormHelperText>
-              </FormControl>
-            </div>
-            <div style={{ marginTop: '20px', width: '48%' }}>
-              <FormControl>
-                <FormLabel>ISBN number</FormLabel>
-                <Input
-                  value={isbn}
-                  onChange={(e) => setIsbn(e.target.value)}
-                  type="number"
-                />
-                <FormHelperText>Enter correct ISBN number</FormHelperText>
-              </FormControl>
-            </div>
-          </HStack>
-          <HStack gap={20}>
-            <div style={{ marginTop: '20px' }}>
-              <FormLabel>Form Category</FormLabel>
-              {categories.map((category, index) => (
-                <FormControl key={index}>
-                  <Select
-                    placeholder="Select Category"
-                    my={5}
-                    value={category}
-                    onChange={(e) =>
-                      handleCategoryChange(index, e.target.value)
-                    }>
-                    {[
-                      'Fiction',
-                      'Adventure',
-                      'Non-Fiction',
-                      'Education',
-                      'Mystery',
-                      'Fantasy',
-                      'Drama',
-                      'Romance',
-                      'Thriller',
-                      'Kids',
-                      'Other',
-                    ].map((categoryOption) => (
-                      <option
-                        key={categoryOption}
-                        value={categoryOption}>{categoryOption}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-              ))}
-              <Button colorScheme="teal" onClick={handleAddCategory}>
-                Add Category
-              </Button>
-            </div>
-          </HStack>
-          <HStack my={4}>
-            <FormControl>
-              <h1>Front Page</h1>
-              <Box
-                boxShadow={'lg'}
-                my={3}
-                bgColor={'gray.200'}
-                rounded={'md'}
-                height={'100px'}
-                width={'150px'}
-                display={'flex'}
-                alignItems={'center'}
-                justifyContent={'center'}
-                cursor={'pointer'}
-                onClick={handleClickFront}>
-                {frontPreview ? (
-                  <img
-                    src={frontPreview}
-                    alt="Front Page Preview"
-                    style={{ maxWidth: '100%', maxHeight: '100%' }}
-                  />
-                ) : (
-                  <FaCloudUploadAlt size={34} />
-                )}
-              </Box>
-              <Input
-                hidden
-                ref={frontInputRef}
-                width={'60%'}
-                accept="image/*"
-                onChange={(e) => onFileChange(e, 'front')}
-                type="file"
-              />
-              <FormHelperText>
-                Upload front page, clear frontpage
-              </FormHelperText>
+    <Box w="full" maxW="6xl" mx="auto" px={6} py={8}>
+      <Heading textAlign="center" mb={6}>
+        📚 Create a Book for Swapping
+      </Heading>
+
+      <form onSubmit={handleSubmit}>
+        <Wrap spacing={6}>
+          <WrapItem flex="1">
+            <FormControl isRequired>
+              <FormLabel>Title</FormLabel>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+              <FormHelperText>Ensure the book title is correct.</FormHelperText>
             </FormControl>
-            <FormControl>
-              <h1>Back Page</h1>
-              <Box
-                boxShadow={'lg'}
-                my={3}
-                bgColor={'gray.200'}
-                rounded={'md'}
-                height={'100px'}
-                width={'150px'}
-                display={'flex'}
-                alignItems={'center'}
-                justifyContent={'center'}
-                cursor={'pointer'}
-                onClick={handleClickBack}>
-                {backPreview ? (
-                  <img
-                    src={backPreview}
-                    alt="Back Page Preview"
-                    style={{ maxWidth: '100%', maxHeight: '100%' }}
-                  />
-                ) : (
-                  <FaCloudUploadAlt size={34} />
-                )}
-              </Box>
-              <Input
-                hidden
-                ref={backInputRef}
-                width={'60%'}
-                accept="image/*"
-                onChange={(e) => onFileChange(e, 'back')}
-                type="file"
-              />
-              <FormHelperText>
-                Upload back page, clear back page
-              </FormHelperText>
+          </WrapItem>
+
+          <WrapItem flex="1">
+            <FormControl isRequired>
+              <FormLabel>Author</FormLabel>
+              <Input value={author} onChange={(e) => setAuthor(e.target.value)} />
+              <FormHelperText>Provide the accurate author name.</FormHelperText>
             </FormControl>
-          </HStack>
-          <Flex mt={10} justifyContent={'center'} alignItems={'center'}>
-            <Button colorScheme="teal" type="submit">
-              Submit
+          </WrapItem>
+
+          <WrapItem flex="1">
+            <FormControl>
+              <FormLabel>Edition</FormLabel>
+              <Input value={edition} onChange={(e) => setEdition(e.target.value)} />
+              <FormHelperText>Eg: First, Second, Revised, etc.</FormHelperText>
+            </FormControl>
+          </WrapItem>
+
+          <WrapItem flex="1">
+            <FormControl>
+              <FormLabel>ISBN</FormLabel>
+              <Input
+                type="number"
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
+              />
+              <FormHelperText>Enter the book's ISBN number.</FormHelperText>
+            </FormControl>
+          </WrapItem>
+        </Wrap>
+
+        <Box my={6}>
+          <FormLabel>Categories</FormLabel>
+          <VStack spacing={3} align="stretch">
+            {categories.map((cat, i) => (
+              <Select
+                key={i}
+                placeholder="Select Category"
+                value={cat}
+                onChange={(e) => handleCategoryChange(i, e.target.value)}
+              >
+                {[
+                  'Fiction',
+                  'Adventure',
+                  'Non-Fiction',
+                  'Education',
+                  'Mystery',
+                  'Fantasy',
+                  'Drama',
+                  'Romance',
+                  'Thriller',
+                  'Kids',
+                  'Other',
+                ].map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </Select>
+            ))}
+            <Button onClick={handleAddCategory} colorScheme="teal" size="sm">
+              + Add Category
             </Button>
-          </Flex>
-        </form>
-      </Box>
+          </VStack>
+        </Box>
+
+        <HStack spacing={10} my={6} flexWrap="wrap">
+          {/* Front Page */}
+          <FormControl>
+            <FormLabel>Front Page</FormLabel>
+            <Box
+              w="150px"
+              h="200px"
+              bg="gray.200"
+              rounded="md"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              boxShadow="md"
+              onClick={handleClickFront}
+            >
+              {frontPreview ? (
+                <Image src={frontPreview} alt="Front" objectFit="cover" w="100%" h="100%" />
+              ) : (
+                <FaCloudUploadAlt size={30} />
+              )}
+            </Box>
+            <Input
+              hidden
+              ref={frontInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => onFileChange(e, 'front')}
+            />
+            <FormHelperText>Upload a clear front page.</FormHelperText>
+          </FormControl>
+
+          {/* Back Page */}
+          <FormControl>
+            <FormLabel>Back Page</FormLabel>
+            <Box
+              w="150px"
+              h="200px"
+              bg="gray.200"
+              rounded="md"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              boxShadow="md"
+              onClick={handleClickBack}
+            >
+              {backPreview ? (
+                <Image src={backPreview} alt="Back" objectFit="cover" w="100%" h="100%" />
+              ) : (
+                <FaCloudUploadAlt size={30} />
+              )}
+            </Box>
+            <Input
+              hidden
+              ref={backInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => onFileChange(e, 'back')}
+            />
+            <FormHelperText>Upload a clear back page.</FormHelperText>
+          </FormControl>
+        </HStack>
+
+        <Flex justify="center" mt={10}>
+          <Button type="submit" colorScheme="teal" size="lg">
+            Submit Book
+          </Button>
+        </Flex>
+      </form>
     </Box>
   );
 };
