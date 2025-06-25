@@ -70,7 +70,7 @@ const Home = () => {
     const fetchUnavailableBooks = async () => {
       try {
         const resp = await axios.get(
-          `http://localhost:8080/api/books/books/notAvailable`,
+          `http://localhost:8080/api/books/notAvailable`,
           { withCredentials: true }
         );
         setUnav(resp.data);

@@ -79,7 +79,7 @@ const Navbar = () => {
     <Box
       boxShadow="sm"
       bg="white"
-      p={3}
+      p={2}
       position="sticky"
       top={0}
       zIndex={1000}
@@ -100,7 +100,7 @@ const Navbar = () => {
             align="center"
           >
             <NavItem to="/" label="Home" />
-            <NavItem to="/preferences" label="Use AI ✨" />
+            <NavItem to="/preferences" label="Ask AI ✨" />
             <NavItem to="/create" label="Add Books" />
             <NavItem to="/profile" label="My Profile" />
 
@@ -143,14 +143,14 @@ const Navbar = () => {
           </HStack>
 
           {/* Mobile Menu Button */}
-          <IconButton
+          {/* <IconButton
             ref={btnRef}
             onClick={onOpen}
             icon={<GiHamburgerMenu />}
             variant="ghost"
             aria-label="Open menu"
             display={{ base: "flex", md: "none" }}
-          />
+          /> */}
         </HStack>
       </Container>
 
