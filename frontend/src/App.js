@@ -11,6 +11,9 @@ import Navbar from "./components/Navbar/Navbar";
 import CreateBook from "./components/CreateBook/CreateBook";
 import LandingPage from "./components/pages/LandingPage";
 import Preferences from "./components/pages/Preferences";
+import CommunityChat from "./components/CommunityChat/CommunityChat";
+import { Button, IconButton } from "@chakra-ui/react";
+import { IoChatboxOutline } from "react-icons/io5";
 
 const App = () => {
   const { user } = useContext(UserContext);
@@ -18,7 +21,31 @@ const App = () => {
 
   return (
     <div>
-      {user && <Navbar />}
+      <IconButton
+        onClick={() => navigate("/community")}
+        zIndex={1000}
+        position="fixed"
+        bottom={6}
+        right={6}
+        isRound={true}
+        variant="solid"
+        display={
+          user && !window.location.pathname.split("/").includes("community")
+            ? "flex"
+            : "none"
+        }
+        alignItems="center"
+        justifyContent="center"
+        colorScheme="orange"
+        aria-label="Community Chat"
+        // ✅ Bigger size
+        boxSize="70px" // makes button 70x70
+        icon={<IoChatboxOutline size={36} />} // icon size 36px
+      />
+
+      {user && !window.location.pathname.split("/").includes("community") && (
+        <Navbar />
+      )}
       <Routes>
         <Route path="*" element={<Navigate to="/" />} />
         <Route
@@ -44,6 +71,11 @@ const App = () => {
         <Route
           path="/create"
           element={user ? <CreateBook /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/community"
+          exact
+          element={user ? <CommunityChat /> : <Navigate to="/" />}
         />
         <Route path="/profile" element={<Profile />} />
         <Route path="/about" element={<About />} />

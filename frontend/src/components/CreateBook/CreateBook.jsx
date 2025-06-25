@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from "react";
 import {
   FormControl,
   Input,
@@ -16,37 +16,52 @@ import {
   Heading,
   Wrap,
   WrapItem,
-} from '@chakra-ui/react';
-import { UserContext } from '../../context/UserContext';
-import axios from 'axios';
-import { FaCloudUploadAlt } from 'react-icons/fa';
+} from "@chakra-ui/react";
+import { UserContext } from "../../context/UserContext";
+import axios from "axios";
+import { FaCloudUploadAlt } from "react-icons/fa";
+import { uploadImage } from "../../util/uploadImage";
+import { v4 as uuid} from "uuid";
 
 axios.defaults.withCredentials = true;
 
 const CreateBook = () => {
   const { user } = useContext(UserContext);
-  const [categories, setCategories] = useState(['']);
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [isbn, setIsbn] = useState('');
-  const [edition, setEdition] = useState('');
-  const [frontPage, setFrontPage] = useState('');
-  const [backPage, setBackPage] = useState('');
-  const [frontPreview, setFrontPreview] = useState('');
-  const [backPreview, setBackPreview] = useState('');
-
+  const [uid, _] = useState(uuid());
   const toast = useToast();
+
+  const [bookData, setBookData] = useState({
+    title: "",
+    author: "",
+    isbn: "",
+    edition: "",
+    frontPage: null,
+    backPage: null,
+    categories: [""],
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const [frontPreview, setFrontPreview] = useState("");
+  const [backPreview, setBackPreview] = useState("");
+
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
 
   const handleAddCategory = () => {
-    setCategories([...categories, '']);
+    setBookData((prev) => ({
+      ...prev,
+      categories: [...prev.categories, ""],
+    }));
   };
 
-  const handleCategoryChange = (index, value) => {
-    const updated = [...categories];
-    updated[index] = value;
-    setCategories(updated);
+  const handleCategoryChange = (value) => {
+    setBookData((prev) => {
+      const updatedCategories = prev?.categories?.map((cat) =>
+        cat === "" ? value : cat
+      );
+      return { ...prev, categories: updatedCategories };
+    });
   };
 
   const handleClickFront = () => frontInputRef.current.click();
@@ -56,56 +71,67 @@ const CreateBook = () => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onloadend = () => {
-      if (type === 'front') {
-        setFrontPage(file);
+      if (type === "front") {
+        setBookData((prev) => ({ ...prev, frontPage: file }));
         setFrontPreview(reader.result);
       } else {
-        setBackPage(file);
+        setBookData((prev) => ({ ...prev, backPage: file }));
         setBackPreview(reader.result);
       }
     };
     if (file) reader.readAsDataURL(file);
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('author', author);
-      formData.append('isbn', isbn);
-      formData.append('category', categories);
-      formData.append('edition', edition);
-      formData.append('frontPage', frontPage);
-      formData.append('backPage', backPage);
-
-      const resp = await axios.post(
-        'http://localhost:8080/api/books/create',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
+      const frontUrl = await uploadImage(
+        bookData.frontPage,
+        `bookImages/${uid}/front`
+      );
+      const backUrl = await uploadImage(
+        bookData.backPage,
+        `bookImages/${uid}/back`
       );
 
+      const payload = {
+        ...bookData,
+        frontPage: frontUrl,
+        backPage: backUrl,
+      };
+
+      const resp = await axios.post('http://localhost:8080/api/books/create', payload);
+
       toast({
-        title: resp.data.message,
-        status: 'success',
+        title: "Book created successfully!",
+        description: "Your book is now available for swapping.",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
+      setBookData({ title: "", author: "", isbn: "", edition: "", frontPage: null, backPage: null, categories: [""] });
+      setFrontPreview("");
+      setBackPreview("");
+      setLoading(false);
     } catch (error) {
       console.log(error);
       toast({
-        title: error?.response?.data?.error || 'Something went wrong',
-        status: 'error',
+        title: error?.response?.data?.error || "Something went wrong",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!user) return null;
+
+  if(loading) return <Text>Loading...</Text>;
 
   return (
     <Box w="full" maxW="6xl" mx="auto" px={6} py={8}>
@@ -116,17 +142,27 @@ const CreateBook = () => {
       <form onSubmit={handleSubmit}>
         <Wrap spacing={6}>
           <WrapItem flex="1">
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Title</FormLabel>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input
+                value={bookData.title}
+                onChange={(e) =>
+                  setBookData({ ...bookData, title: e.target.value })
+                }
+              />
               <FormHelperText>Ensure the book title is correct.</FormHelperText>
             </FormControl>
           </WrapItem>
 
           <WrapItem flex="1">
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Author</FormLabel>
-              <Input value={author} onChange={(e) => setAuthor(e.target.value)} />
+              <Input
+                value={bookData.author}
+                onChange={(e) =>
+                  setBookData({ ...bookData, author: e.target.value })
+                }
+              />
               <FormHelperText>Provide the accurate author name.</FormHelperText>
             </FormControl>
           </WrapItem>
@@ -134,7 +170,12 @@ const CreateBook = () => {
           <WrapItem flex="1">
             <FormControl>
               <FormLabel>Edition</FormLabel>
-              <Input value={edition} onChange={(e) => setEdition(e.target.value)} />
+              <Input
+                value={bookData.edition}
+                onChange={(e) =>
+                  setBookData({ ...bookData, edition: e.target.value })
+                }
+              />
               <FormHelperText>Eg: First, Second, Revised, etc.</FormHelperText>
             </FormControl>
           </WrapItem>
@@ -144,8 +185,10 @@ const CreateBook = () => {
               <FormLabel>ISBN</FormLabel>
               <Input
                 type="number"
-                value={isbn}
-                onChange={(e) => setIsbn(e.target.value)}
+                value={bookData.isbn}
+                onChange={(e) =>
+                  setBookData({ ...bookData, isbn: e.target.value })
+                }
               />
               <FormHelperText>Enter the book's ISBN number.</FormHelperText>
             </FormControl>
@@ -155,27 +198,27 @@ const CreateBook = () => {
         <Box my={6}>
           <FormLabel>Categories</FormLabel>
           <VStack spacing={3} align="stretch">
-            {categories.map((cat, i) => (
+            {bookData.categories.map((cat, i) => (
               <Select
                 key={i}
                 placeholder="Select Category"
                 value={cat}
-                onChange={(e) => handleCategoryChange(i, e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 {[
-                  'Fiction',
-                  'Adventure',
-                  'Non-Fiction',
-                  'Education',
-                  'Mystery',
-                  'Fantasy',
-                  'Drama',
-                  'Romance',
-                  'Thriller',
-                  'Kids',
-                  'Other',
+                  "Fiction",
+                  "Adventure",
+                  "Non-Fiction",
+                  "Education",
+                  "Mystery",
+                  "Fantasy",
+                  "Drama",
+                  "Romance",
+                  "Thriller",
+                  "Kids",
+                  "Other",
                 ].map((opt) => (
-                  <option key={opt} value={opt}>
+                  <option disabled={bookData.categories?.includes(opt)} key={opt} value={opt}>
                     {opt}
                   </option>
                 ))}
@@ -188,7 +231,6 @@ const CreateBook = () => {
         </Box>
 
         <HStack spacing={10} my={6} flexWrap="wrap">
-          {/* Front Page */}
           <FormControl>
             <FormLabel>Front Page</FormLabel>
             <Box
@@ -204,7 +246,13 @@ const CreateBook = () => {
               onClick={handleClickFront}
             >
               {frontPreview ? (
-                <Image src={frontPreview} alt="Front" objectFit="cover" w="100%" h="100%" />
+                <Image
+                  src={frontPreview}
+                  alt="Front"
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                />
               ) : (
                 <FaCloudUploadAlt size={30} />
               )}
@@ -214,12 +262,11 @@ const CreateBook = () => {
               ref={frontInputRef}
               type="file"
               accept="image/*"
-              onChange={(e) => onFileChange(e, 'front')}
+              onChange={(e) => onFileChange(e, "front")}
             />
             <FormHelperText>Upload a clear front page.</FormHelperText>
           </FormControl>
 
-          {/* Back Page */}
           <FormControl>
             <FormLabel>Back Page</FormLabel>
             <Box
@@ -235,7 +282,13 @@ const CreateBook = () => {
               onClick={handleClickBack}
             >
               {backPreview ? (
-                <Image src={backPreview} alt="Back" objectFit="cover" w="100%" h="100%" />
+                <Image
+                  src={backPreview}
+                  alt="Back"
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                />
               ) : (
                 <FaCloudUploadAlt size={30} />
               )}
@@ -245,7 +298,7 @@ const CreateBook = () => {
               ref={backInputRef}
               type="file"
               accept="image/*"
-              onChange={(e) => onFileChange(e, 'back')}
+              onChange={(e) => onFileChange(e, "back")}
             />
             <FormHelperText>Upload a clear back page.</FormHelperText>
           </FormControl>
