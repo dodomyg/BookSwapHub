@@ -70,7 +70,6 @@ const ChatButton = ({ owner }) => {
 
   useEffect(() => {
     const getAllMessages = async () => {
-      console.log(selectedChat,"selectedChat")
       if (!selectedChat) return;
       try {
         // if (!chat.length) return; // Exit if chat array is empty
@@ -79,9 +78,7 @@ const ChatButton = ({ owner }) => {
           `http://localhost:8080/api/message/allMessages/${selectedChat}`,
           { withCredentials: true }
         );
-        console.log(resp?.data,"HEY")
         setMessages(resp.data); // Assuming the API returns messages in the 'messages' property
-        // console.log(resp.data);
         if (modalBodyRef.current) {
           modalBodyRef.current.scrollTop = modalBodyRef.current.scrollHeight;
         }

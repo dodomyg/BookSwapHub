@@ -20,6 +20,7 @@ import axios from "axios";
 import { FaIdCardAlt } from "react-icons/fa";
 import ChatButton from "../ChatButton/ChatButton";
 import { UserContext } from "../../context/UserContext";
+import Loader from "../CustomLoader/Loading";
 
 const SinglePage = () => {
   const { bookId } = useParams();
@@ -28,9 +29,11 @@ const SinglePage = () => {
 
   const [book, setBook] = useState(null);
   const [req, setReq] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchSingleBook = async () => {
+      setLoading(true);
       try {
         const { data } = await axios.get(
           `http://localhost:8080/api/books/${bookId}`,
@@ -38,10 +41,15 @@ const SinglePage = () => {
             withCredentials: true,
           }
         );
+        console.log(data, "DATA");
         setBook(data);
-        setReq(data?.requester?._id === user?._id);
+        setReq(data?.requester === user?._id);
+        setLoading(false);
       } catch (error) {
         console.error(error);
+        setLoading(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -55,6 +63,15 @@ const SinglePage = () => {
         {},
         { withCredentials: true }
       );
+      if (data?.error) {
+        toast({
+          title: data.error,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
       setReq(!req);
       toast({
         title: data.message,
@@ -80,28 +97,36 @@ const SinglePage = () => {
       </Text>
     );
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <Container maxW="7xl" py={{ base: 8, md: 14 }}>
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={10}>
         <VStack spacing={6} align="center">
-          <Image
-            src={book?.frontPage}
-            alt="Front Page"
-            rounded="md"
-            w="100%"
-            maxW="350px"
-            objectFit="cover"
-            boxShadow="md"
-          />
-          <Image
-            src={book?.backPage}
-            alt="Back Page"
-            rounded="md"
-            w="100%"
-            maxW="350px"
-            objectFit="cover"
-            boxShadow="md"
-          />
+          {book?.frontPage && (
+            <Image
+              src={book?.frontPage}
+              alt="Front Page"
+              rounded="md"
+              w="100%"
+              maxW="350px"
+              objectFit="cover"
+              boxShadow="md"
+            />
+          )}
+          {book?.backPage && (
+            <Image
+              src={book?.backPage}
+              alt="Back Page"
+              rounded="md"
+              w="100%"
+              maxW="350px"
+              objectFit="cover"
+              boxShadow="md"
+            />
+          )}
         </VStack>
 
         <Stack spacing={6}>

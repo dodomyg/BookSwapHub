@@ -21,7 +21,8 @@ import { UserContext } from "../../context/UserContext";
 import axios from "axios";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { uploadImage } from "../../util/uploadImage";
-import { v4 as uuid} from "uuid";
+import { v4 as uuid } from "uuid";
+import Loader from "../CustomLoader/Loading";
 
 axios.defaults.withCredentials = true;
 
@@ -82,19 +83,58 @@ const CreateBook = () => {
     if (file) reader.readAsDataURL(file);
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation: Required fields
+    const { title, author, isbn, edition, categories, frontPage, backPage } =
+      bookData;
+    if (!title || !author || !isbn || !edition) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required book details.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Validation: Category at least one
+    if (!categories.length || categories.some((c) => !c)) {
+      toast({
+        title: "Select Category",
+        description: "Please select at least one category.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Validation: At least one image
+    if (!frontPage && !backPage) {
+      toast({
+        title: "No Image Provided",
+        description: "Please upload at least one image (front or back page).",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setLoading(true);
+
     try {
-      const frontUrl = await uploadImage(
-        bookData.frontPage,
-        `bookImages/${uid}/front`
-      );
-      const backUrl = await uploadImage(
-        bookData.backPage,
-        `bookImages/${uid}/back`
-      );
+      // Only upload images if they are selected
+      const frontUrl = frontPage
+        ? await uploadImage(frontPage, `bookImages/${uid}/front`)
+        : null;
+
+      const backUrl = backPage
+        ? await uploadImage(backPage, `bookImages/${uid}/back`)
+        : null;
 
       const payload = {
         ...bookData,
@@ -102,7 +142,9 @@ const CreateBook = () => {
         backPage: backUrl,
       };
 
-      const resp = await axios.post('http://localhost:8080/api/books/create', payload);
+      console.log(payload, "Payload");
+
+      // await axios.post("http://localhost:8080/api/books/create", payload);
 
       toast({
         title: "Book created successfully!",
@@ -111,10 +153,18 @@ const CreateBook = () => {
         duration: 3000,
         isClosable: true,
       });
-      setBookData({ title: "", author: "", isbn: "", edition: "", frontPage: null, backPage: null, categories: [""] });
+
+      setBookData({
+        title: "",
+        author: "",
+        isbn: "",
+        edition: "",
+        frontPage: null,
+        backPage: null,
+        categories: [""],
+      });
       setFrontPreview("");
       setBackPreview("");
-      setLoading(false);
     } catch (error) {
       console.log(error);
       toast({
@@ -123,7 +173,6 @@ const CreateBook = () => {
         duration: 3000,
         isClosable: true,
       });
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -131,7 +180,7 @@ const CreateBook = () => {
 
   if (!user) return null;
 
-  if(loading) return <Text>Loading...</Text>;
+  if (loading) return <Loader />;
 
   return (
     <Box w="full" maxW="6xl" mx="auto" px={6} py={8}>
@@ -145,6 +194,7 @@ const CreateBook = () => {
             <FormControl>
               <FormLabel>Title</FormLabel>
               <Input
+                isRequired
                 value={bookData.title}
                 onChange={(e) =>
                   setBookData({ ...bookData, title: e.target.value })
@@ -158,6 +208,7 @@ const CreateBook = () => {
             <FormControl>
               <FormLabel>Author</FormLabel>
               <Input
+                isRequired
                 value={bookData.author}
                 onChange={(e) =>
                   setBookData({ ...bookData, author: e.target.value })
@@ -171,6 +222,7 @@ const CreateBook = () => {
             <FormControl>
               <FormLabel>Edition</FormLabel>
               <Input
+                isRequired
                 value={bookData.edition}
                 onChange={(e) =>
                   setBookData({ ...bookData, edition: e.target.value })
@@ -184,6 +236,7 @@ const CreateBook = () => {
             <FormControl>
               <FormLabel>ISBN</FormLabel>
               <Input
+                isRequired
                 type="number"
                 value={bookData.isbn}
                 onChange={(e) =>
@@ -218,7 +271,11 @@ const CreateBook = () => {
                   "Kids",
                   "Other",
                 ].map((opt) => (
-                  <option disabled={bookData.categories?.includes(opt)} key={opt} value={opt}>
+                  <option
+                    disabled={bookData.categories?.includes(opt)}
+                    key={opt}
+                    value={opt}
+                  >
                     {opt}
                   </option>
                 ))}

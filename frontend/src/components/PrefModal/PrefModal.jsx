@@ -12,7 +12,7 @@ import {
   Button,
   useDisclosure,
   Text,
-  Toast,
+  useToast
 } from "@chakra-ui/react";
 import axios from "axios";
 import { getUser } from "../../context/UserContext";
@@ -40,6 +40,7 @@ const PrefModal = ({
   setPref,
   setUser,
 }) => {
+  const toast = useToast();
   const [selectedGenres, setSelectedGenres] = useState(currentPrefs);
   useEffect(() => {
     setSelectedGenres(currentPrefs);
@@ -55,7 +56,7 @@ const PrefModal = ({
         { withCredentials: true }
       );
       getUser(setUser);
-      Toast({
+      toast({
         title: res.data.message,
         status: "success",
         duration: 3000,
@@ -65,7 +66,7 @@ const PrefModal = ({
       onClose();
     } catch (error) {
       console.log(error);
-      Toast({
+      toast({
         title: error.response.data.error || "Server error",
         status: "error",
         duration: 3000,

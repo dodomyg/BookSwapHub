@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
+import Loader from "../CustomLoader/Loading";
 axios.defaults.withCredentials = true;
 
 const MyBooks = () => {
@@ -30,7 +31,7 @@ const MyBooks = () => {
       try {
         setLoading(true);
         const resp = await axios.get(
-          `http://localhost:8080/api/users/myBooks`,
+          `http://localhost:8080/api/books/myBooks`,
           {
             withCredentials: true,
           }
@@ -71,20 +72,19 @@ const MyBooks = () => {
   };
 
   if (!user) return null;
-
+  if(loading)return <Loader/>
   return (
     <Flex flexDir="column" alignItems="center" gap={5}>
       <Text fontWeight="600" fontSize="xl">
         My Books
       </Text>
 
-      {loading ? (
-        <Spinner size="lg" />
-      ) : books.length === 0 ? (
+      {!loading && books.length === 0 ? (
         <Text textAlign="center" color="gray.500">
           You don’t have any books yet. Add one from the “Create” page!
         </Text>
       ) : (
+        !loading &&
         books.map((book) => (
           <Card
             key={book?._id}

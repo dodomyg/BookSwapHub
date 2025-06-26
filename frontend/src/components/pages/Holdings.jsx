@@ -18,6 +18,7 @@ import {
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
 import CountdownTimer from "./CountdownTimer";
+import Loader from "../CustomLoader/Loading";
 
 const Holdings = () => {
   const [holdings, setHoldings] = useState([]);
@@ -31,7 +32,7 @@ const Holdings = () => {
       try {
         setLoading(true);
         const resp = await axios.get(
-          "http://localhost:8080/api/books/my/holdings",
+          "http://localhost:8080/api/books/holdings",
           { withCredentials: true }
         );
         setHoldings(resp.data);
@@ -78,15 +79,17 @@ const Holdings = () => {
 
   if (!user) return null;
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <Flex flexDir={"column"} alignItems={"center"} gap={5}>
       <Text fontWeight={"600"} fontSize={"xl"}>
         My Holdings
       </Text>
 
-      {loading ? (
-        <Spinner size="lg" />
-      ) : holdings.length === 0 ? (
+      {!loading && holdings.length === 0 ? (
         <Text textAlign="center" color="gray.500" maxW="850px">
           You are not holding any books right now.
         </Text>

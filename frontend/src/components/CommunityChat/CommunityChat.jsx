@@ -17,12 +17,17 @@ import { IoArrowBack } from "react-icons/io5";
 import { FaInfo } from "react-icons/fa";
 import { fetchMessages, sendMessage } from "../../util/rtdbFetch";
 import { UserContext } from "../../context/UserContext";
+import Loader from "../CustomLoader/Loading";
 
 const CommunityChat = () => {
+  const topBarBg = useColorModeValue("white", "gray.800");
+  const inputBg = useColorModeValue("white", "gray.700");
   const navigate = useNavigate();
   const chatBg = useColorModeValue("linear(to-b, teal.50, white)", "gray.700");
   const msgBgUser = useColorModeValue("blue.100", "blue.600");
   const msgBgOther = useColorModeValue("gray.200", "gray.600");
+
+  const [loading, setLoading] = useState(false);
 
   const { user } = useContext(UserContext);
   const [messages, setMessages] = useState([]);
@@ -36,13 +41,15 @@ const CommunityChat = () => {
   };
 
   useEffect(() => {
-    fetchMessages(setMessages);
+    setLoading(true);
+    fetchMessages(setMessages, setLoading);
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  if (loading) return <Loader />;
   return (
     <Flex direction="column" h="100vh" w="100vw" bgGradient={chatBg}>
       {/* Top Bar */}
@@ -51,7 +58,7 @@ const CommunityChat = () => {
         justify="space-between"
         px={4}
         py={3}
-        bg={useColorModeValue("white", "gray.800")}
+        bg={topBarBg}
         boxShadow="md"
       >
         <HStack spacing={3}>
@@ -95,7 +102,9 @@ const CommunityChat = () => {
             <Text fontSize="lg" fontWeight="medium">
               👋 No messages yet
             </Text>
-            <Text fontSize="sm">Be the first to say something to the community!</Text>
+            <Text fontSize="sm">
+              Be the first to say something to the community!
+            </Text>
           </Box>
         ) : (
           messages.map((m, i) => (
@@ -104,9 +113,7 @@ const CommunityChat = () => {
               alignSelf={
                 m?.sender?.email === user?.email ? "flex-end" : "flex-start"
               }
-              bg={
-                m?.sender?.email === user?.email ? msgBgUser : msgBgOther
-              }
+              bg={m?.sender?.email === user?.email ? msgBgUser : msgBgOther}
               px={4}
               py={2}
               borderRadius="md"
@@ -129,7 +136,7 @@ const CommunityChat = () => {
       {/* Input Bar */}
       <HStack
         p={4}
-        bg={useColorModeValue("white", "gray.800")}
+        bg={inputBg}
         boxShadow="inner"
       >
         <Input
@@ -142,7 +149,7 @@ const CommunityChat = () => {
               setMsg("");
             }
           }}
-          bg={useColorModeValue("white", "gray.700")}
+          bg={inputBg}
         />
         <Button
           onClick={() => {
