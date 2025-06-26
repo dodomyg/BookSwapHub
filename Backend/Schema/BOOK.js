@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const bookSchema = new Schema({
@@ -10,28 +10,42 @@ const bookSchema = new Schema({
     type: String,
     required: true,
   },
-  edition:{
+  edition: {
     type: String,
     required: true,
   },
   category: {
     type: [String],
-    required: true
+    required: true,
+    enum: [
+      "Fiction",
+      "Adventure",
+      "Education",
+      "Non-Fiction",
+      "Science-Fiction",
+      "Mystery",
+      "Fantasy",
+      "Drama",
+      "Romance",
+      "Thriller",
+      "Kids",
+      "Other",
+    ],
   },
   isbn: {
     type: String,
     required: true,
-    unique:true
+    unique: true,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'USER',
+    ref: "USER",
     required: true,
   },
-  holder:{
+  holder: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'USER',
-  default: null
+    ref: "USER",
+    default: null,
   },
   isAvailable: {
     type: Boolean,
@@ -39,17 +53,17 @@ const bookSchema = new Schema({
   },
   requester: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'USER',
+    ref: "USER",
     default: null,
   },
-  desc:{
+  desc: {
     type: String,
   },
   isApproved: {
     type: Boolean,
     default: false,
   },
-  isReturned:{
+  isReturned: {
     type: Boolean,
     default: false,
   },
@@ -60,8 +74,7 @@ const bookSchema = new Schema({
   backPage: {
     type: String,
     required: true,
-  }
+  },
 });
 
-
-module.exports = mongoose.model('BOOK', bookSchema);
+module.exports = mongoose.model("BOOK", bookSchema);
