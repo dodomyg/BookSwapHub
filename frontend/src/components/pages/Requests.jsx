@@ -17,6 +17,7 @@ import {
   Spinner,
   Box,
 } from "@chakra-ui/react";
+import Loader from "../CustomLoader/Loading";
 
 const Requests = () => {
   const { user } = useContext(UserContext);
@@ -73,20 +74,19 @@ const Requests = () => {
   };
 
   if (!user) return null;
-
+  if (loading) return <Loader />;
   return (
     <Flex flexDir={"column"} alignItems={"center"} gap={5}>
       <Text fontWeight={"600"} fontSize={"xl"}>
         Book Swap Requests
       </Text>
 
-      {loading ? (
-        <Spinner size="lg" />
-      ) : req.length === 0 ? (
+      {!loading && req.length === 0 ? (
         <Text textAlign="center" color="gray.500" maxW="850px">
           No Requests Found
         </Text>
       ) : (
+        !loading &&
         req.map((i) => (
           <Card
             key={i._id}

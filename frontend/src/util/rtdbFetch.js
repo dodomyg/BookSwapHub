@@ -1,15 +1,17 @@
 import { get, onValue, ref, set } from "firebase/database";
 import { rtdb } from "./firebase";
 
-export const fetchMessages = async (setMessages) => {
+export const fetchMessages = async (setMessages,setLoading) => {
   try {
     const mssgRef = ref(rtdb, "/community_chat/messages");
     onValue(mssgRef, (snapshot) => {
       const data = snapshot.val();
       setMessages(data);
+      setLoading(false)
     });
   } catch (error) {
     console.log(error, "Error fetching messages from RTDB");
+    setLoading(false)
   }
 };
 

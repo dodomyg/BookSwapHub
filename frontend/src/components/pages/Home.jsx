@@ -1,32 +1,32 @@
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../context/UserContext";
-import Card from "../Card/Card";
 import {
   Flex,
   Box,
-  Image,
   Text,
   Input,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  Stack,
-  HStack,
   Select,
+  Stack,
+  Heading,
+  Divider,
+  Spinner,
+  VStack,
+  HStack,
   Button,
 } from "@chakra-ui/react";
+import { UserContext } from "../../context/UserContext";
+import Card from "../Card/Card";
 import axios from "axios";
-import Banner from "../../Images/Book2.webp";
-import { CiSearch } from "react-icons/ci";
+import Loader from "../CustomLoader/Loading";
 
 const Home = () => {
-  const [category, setCategory] = useState("");
-
   const { user } = useContext(UserContext);
-  const [unAv, setUnav] = useState([]);
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
+
+  const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
+  const [books, setBooks] = useState([]);
+  const [unAvailableBooks, setUnAvailableBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const categories = [
     "Fiction",
     "Adventure",
@@ -41,212 +41,171 @@ const Home = () => {
     "Other",
   ];
 
-  const fetchBooks = async () => {
-    setLoading(true);
-    try {
-      const query = [];
-      if (search) {
-        query.push(`search=${search}`);
-      }
-      if (category) {
-        query.push(`category=${category}`);
-      }
-      const queryString = query.length > 0 ? `?${query.join("&")}` : "";
-      const response = await axios.get(
-        `http://localhost:8080/api/books/allBooks${queryString}`,
-        {
-          withCredentials: true,
-        }
-      );
-      setBooks(response.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredBooks = books?.filter((b) => {
+    return (
+      b?.title?.toLowerCase().includes(search.toLowerCase()) &&
+      (category === "" || b?.category?.includes(category))
+    );
+  });
 
   useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/api/books/allBooks",
+          {
+            withCredentials: true,
+          }
+        );
+        setBooks(response.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const fetchUnavailableBooks = async () => {
       try {
-        const resp = await axios.get(
-          `http://localhost:8080/api/books/notAvailable`,
-          { withCredentials: true }
+        const response = await axios.get(
+          "http://localhost:8080/api/books/notAvailable",
+          {
+            withCredentials: true,
+          }
         );
-        setUnav(resp.data);
+        setUnAvailableBooks(response.data);
       } catch (error) {
         console.log(error);
       }
     };
-    fetchUnavailableBooks();
 
     fetchBooks();
+    // fetchUnavailableBooks();
   }, []);
 
-  if (!user) {
-    return;
-  }
-  if (loading) {
-    return <h1>Loading...</h1>;
-  }
-  return (
-    <div>
-      <Box mb={10} position="relative">
-        <Image
-          src={Banner}
-          objectFit="cover"
-          alt="banner"
-          width="100%"
-          height="72vh"
-          filter={"brightness(50%)"}
-        />
-        <Box
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-          textAlign="center"
-        >
-          <Text color="white" fontSize="2xl" fontWeight="bold" mb={4}>
-            Welcome to BookSwapHub
-          </Text>
-          <form
-            onSubmit={fetchBooks}
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            <InputGroup size="lg" width="300px">
-              <Input
-                placeholder="Search books"
-                bg="white"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                borderRadius="full"
-                boxShadow="md"
-                _focus={{ outline: "none" }}
-              />
-              <InputRightElement width="3.5rem">
-                <IconButton
-                  isRound={true}
-                  variant="solid"
-                  colorScheme="pink"
-                  type="submit"
-                  aria-label="Done"
-                  fontSize="20px"
-                  icon={<CiSearch />}
-                />
-              </InputRightElement>
-            </InputGroup>
-          </form>
-        </Box>
-      </Box>
-      <HStack
-        alignItems={"center"}
-        justifyContent={"space-between"}
-        my={10}
-        px={10}
-      >
-        <Text my={2} textAlign={"center"} fontSize={"25px"}>
-          All Available Books
-        </Text>
-        <HStack>
-          <Select
-            width={"200px"}
-            placeholder="All Books"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </Select>
-          <Button onClick={fetchBooks}>Filter</Button>
-        </HStack>
-      </HStack>
-      {books.length === 0 && (
-        <Text textAlign={"center"} my={4} fontSize={"25px"} color={"gray.400"}>
-          No Books Found , try searching by Book title or author
-        </Text>
-      )}
-      <Flex
-        mx={10}
-        flexDir={"row"}
-        flexWrap={"wrap"}
-        alignItems={"start"}
-        justifyContent={"flex-start"}
-        gap={10}
-      >
-        {!loading &&
-          books.map((book) => {
-            return (
-              <Card
-                owner={book?.owner.username}
-                key={book?._id}
-                title={book?.title}
-                author={book?.author}
-                id={book._id}
-                frontPage={book?.frontPage}
-                edition={book?.edition}
-              />
-            );
-          })}
-      </Flex>
+  if (!user) return null;
 
-      <Box mx={1} my={20}>
-        {!loading && unAv?.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-start",
-              flexDirection: "column",
-            }}
-          >
-            <Text mx={10} my={3} fontSize={"23px"} color={"gray.600"}>
-              Currently Unavailable Books
+  if (loading) {
+    return <Loader />;
+  }
+
+  return (
+    <Flex direction={{ base: "column", md: "row" }} px={6} py={8} gap={8}>
+      {/* Sidebar */}
+      <Box
+        minW={{ base: "100%", md: "250px" }}
+        borderWidth="1px"
+        borderRadius="lg"
+        p={5}
+        bg="white"
+        boxShadow="md"
+        h="fit-content"
+      >
+        <Heading size="md" mb={4}>
+          Filter Books
+        </Heading>
+        <Stack spacing={4}>
+          <Box>
+            <Text fontWeight="medium" mb={1}>
+              Search Title
             </Text>
-            <Flex
-              mx={10}
-              flexDir={"row"}
-              flexWrap={"wrap"}
-              alignItems={"start"}
-              justifyContent={"flex-start"}
-              gap={10}
+            <Input
+              placeholder="e.g. Harry Potter"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Box>
+          <Box>
+            <Text fontWeight="medium" mb={1}>
+              Category
+            </Text>
+            <Select
+              placeholder="All Categories"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
             >
-              {unAv.map((book) => (
-                <Stack position="relative">
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </Select>
+          </Box>
+        </Stack>
+      </Box>
+
+      {/* Book Display */}
+      <Box flex="1">
+        <Heading size="lg" mb={4}>
+          Available Books
+        </Heading>
+        <Divider mb={4} />
+
+        {loading ? (
+          <Flex justify="center" align="center" h="200px">
+            <Spinner size="xl" color="teal.500" />
+          </Flex>
+        ) : filteredBooks?.length === 0 ? (
+          <Text textAlign="center" color="gray.500" fontSize="lg">
+            No books found. Try a different title or category.
+          </Text>
+        ) : (
+          <Flex wrap="wrap" gap={6}>
+            {filteredBooks.map((book) => (
+              <Card
+                key={book._id}
+                id={book._id}
+                title={book.title}
+                author={book.author}
+                edition={book.edition}
+                frontPage={book.frontPage}
+                owner={book.owner?.username}
+              />
+            ))}
+          </Flex>
+        )}
+
+        {/* Unavailable Books */}
+        {unAvailableBooks?.length > 0 && (
+          <>
+            <Heading size="md" mt={10} mb={3} color="gray.600">
+              Currently Unavailable Books
+            </Heading>
+            <Flex wrap="wrap" gap={6}>
+              {unAvailableBooks.map((book) => (
+                <Box position="relative" key={book._id}>
                   <Card
-                    owner={book.owner?.username}
+                    id={book._id}
                     title={book.title}
                     author={book.author}
-                    id={book._id}
-                    frontPage={book.frontPage}
                     edition={book.edition}
+                    frontPage={book.frontPage}
+                    owner={book.owner?.username}
                   />
-                  <Text
+                  <Box
                     position="absolute"
                     top={0}
                     left={0}
                     right={0}
                     bottom={0}
+                    bg="rgba(0,0,0,0.6)"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    bg="rgba(130, 0, 0, 0.7)"
-                    color="white"
-                    fontSize="sm"
-                    fontWeight="bold"
                     borderRadius="md"
                   >
-                    Not Available
-                  </Text>
-                </Stack>
+                    <Text color="white" fontWeight="bold">
+                      Not Available
+                    </Text>
+                  </Box>
+                </Box>
               ))}
             </Flex>
-          </div>
+          </>
         )}
       </Box>
-    </div>
+    </Flex>
   );
 };
 

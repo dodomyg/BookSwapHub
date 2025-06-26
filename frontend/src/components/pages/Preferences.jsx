@@ -19,6 +19,7 @@ import { UserContext } from "../../context/UserContext";
 import PrefModal from "../PrefModal/PrefModal";
 import axios from "axios";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   AlertDialog,
   AlertDialogBody,
@@ -235,7 +236,9 @@ const BookChat = () => {
                     <Text fontSize="sm" fontWeight="semibold" mb={1}>
                       BookBot:
                     </Text>
-                    <Markdown>{msg.response}</Markdown>
+                    <Markdown remarkPlugins={[remarkGfm]}>
+                      {msg.response}
+                    </Markdown>
                   </Box>
                 </HStack>
               )}

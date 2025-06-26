@@ -100,9 +100,10 @@ const Navbar = () => {
             align="center"
           >
             <NavItem to="/" label="Home" />
+            <NavItem to="/about" label="About" />
             <NavItem to="/preferences" label="Ask AI ✨" />
             <NavItem to="/create" label="Add Books" />
-            <NavItem to="/profile" label="My Profile" />
+            <NavItem to="/profile" label="My Library" />
 
             {user ? (
               <>
@@ -122,17 +123,6 @@ const Navbar = () => {
                     bg="blue.400"
                   />
                 </Tooltip>
-                <div
-                  onClick={() => navigate("/about")}
-                  style={{
-                    cursor: "pointer",
-                    width: "30px",
-                    height: "30px",
-                    fontSize: "30px",
-                  }}
-                >
-                  <GiInfo />
-                </div>
               </>
             ) : (
               <>
@@ -170,7 +160,7 @@ const Navbar = () => {
               <NavItem to="/" label="Home" />
               <NavItem to="/about" label="About" />
               <NavItem to="/create" label="Create" />
-              <NavItem to="/profile" label="My Profile" />
+              <NavItem to="/profile" label="My Library" />
               {user ? (
                 <Button colorScheme="red" variant="solid" onClick={logOut}>
                   Logout
