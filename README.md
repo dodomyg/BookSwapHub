@@ -1,92 +1,96 @@
-# BookSwapHub
+# 📚 BookSwapHub
 
-BookSwap Hub is an application designed to facilitate the swapping of books between book lovers. It allows users to exchange books securely, communicate via chat, filter swap options based on book names and categories, and manage the entire swapping process seamlessly.
+**BookSwapHub** is a full-stack platform that enables readers to swap books effortlessly. The application encourages sustainable reading, reduces book acquisition costs, and builds a community of readers who love sharing stories. It integrates advanced features like real-time chat, AI-powered book recommendations, category filtering, return policy, and more.
 
 ![BookSwap Hub Animation](https://example.com/bookswap-hub-animation.gif)
 
-![FlowChart](https://github.com/user-attachments/assets/2ec5b4f8-bdf1-4a18-a369-7af3108a8349)
+---
 
+## 🚀 Features
 
-## Features
+### 🔄 Seamless Book Swapping
+- Users can securely request and exchange books with others without any financial transactions.
+- A return policy ensures fair play and trust.
 
-### Secure Swapping
+### 🧠 AI Recommendations (Gemini API)
+- Integrated Gemini API to provide **personalized book recommendations** based on genre preferences.
+- Smart AI agent responds to queries like "suggest me fantasy novels" or "books by Orwell".
 
-Users can securely swap books without any financial transactions involved.
+### 💬 One-on-One Chat & Community Chat
+- Built-in **real-time chat** system (via Firebase Realtime DB) for:
+  - Direct messaging with book owners.
+  - Community chat to engage with other readers.
 
-![Secure Swapping Animation](https://example.com/secure-swapping-animation.gif)
+### 🔍 Smart Filtering & Search
+- Filter books by **title** or **category**.
+- Intuitive search bar with fast results.
 
-### Chatting
+### 🪄 Responsive UI & Animations
+- Sleek, modern, mobile-friendly interface powered by **Chakra UI** and **Mantine UI**.
+- Clean animations and state indicators for intuitive UX.
 
-Built-in chat feature to communicate with other users for arranging swaps.
+### 🧾 Book Management
+- Upload book details with images (front and back covers).
+- Manage current holdings, requests, and swap history.
+- Return or cancel requests through a robust dashboard.
 
-![Chatting Animation](https://example.com/chatting-animation.gif)
+### 🔐 Enhanced Security
+- Role-based access and strict Firebase + backend rules to protect user and data integrity.
 
-### Filtering
+## 📦 Installation
 
-Option to filter swap requests based on book names and categories.
+### 1. Clone the Repository
 
-![Filtering Animation](https://example.com/filtering-animation.gif)
+```bash
+git clone https://github.com/dodomyg/BookSwapHub.git
+cd BookSwapHub
+````
 
-### Return Policy
+### 2. Install Dependencies
 
-Implements a return policy mechanism for handling disputes or unsatisfactory swaps.
-
-![Return Policy Animation](https://example.com/return-policy-animation.gif)
-
-### Handling Requests
-
-Efficiently manages incoming swap requests and notifications.
-
-![Handling Requests Animation](https://example.com/handling-requests-animation.gif)
-
-## Technologies Used
-
-- **MERN Stack**:
-  - **MongoDB**: Database for storing book and user information.
-  - **Express**: Backend framework for handling HTTP requests and APIs.
-  - **React**: Frontend library for building user interfaces.
-  - **Node.js**: Runtime environment for server-side applications.
-
-- **Chakra UI**: Component library for React applications to ensure consistent and responsive design.
-
-![Chakra UI Animation](https://example.com/chakra-ui-animation.gif)
-
-## Installation
-
-To run the BookSwap Hub locally, follow these steps:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/your-username/bookswap-hub.git
-   cd bookswap-hub
-Install dependencies:
-
-bash
-Copy code
+```bash
 npm install
-Set up environment variables:
+# or
+yarn install
+```
 
-Create a .env file in the root directory.
-Define environment variables such as database connection strings, API keys, etc.
-Start the development server:
+### 3. Set Environment Variables
 
-bash
-Copy code
+Create a `.env` file in the root with the following keys:
+
+```
+MONGO_URI=your_mongo_connection_string
+JWT_SECRET=your_jwt_secret
+FIREBASE_API_KEY=your_firebase_key
+...
+```
+
+### 4. Start Development Server
+
+```bash
 npm start
-Open your browser and visit http://localhost:3000 to view the application.
+```
 
-Usage
-Sign Up / Sign In: Create an account or sign in to access the platform.
-Browse Books: Explore available books for swapping.
-Initiate Swap: Initiate a swap request with another user.
-Manage Swaps: Accept, reject, or cancel swap requests.
-Chat with Users: Communicate with other users to finalize swap details.
-Update Profile: Manage your profile and preferences.
+Visit `http://localhost:3000` to start using BookSwapHub locally.
 
-Contributing
-Contributions are welcome! Here are a few guidelines:
+---
 
-Fork the repository and create your branch from main.
-Make sure your code follows the project's coding style.
-Issue a pull request detailing the changes made.
+## 🧑‍💻 Usage Guide
+
+* 🔐 **Sign Up / Login** – Start your book swapping journey.
+* 📚 **Browse** – View all available books or filter by category.
+* ✉️ **Request** – Initiate a book swap with a single click.
+* 💬 **Chat** – Talk directly with the owner or ask in the community chat.
+* 🔁 **Return** – Mark books returned once completed.
+* 🧠 **Ask AI** – Use the smart assistant to get book reviews or suggestions.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! 🙌
+
+1. Fork the repo
+2. Create a feature branch
+3. Commit changes with meaningful messages
+4. Submit a pull request
