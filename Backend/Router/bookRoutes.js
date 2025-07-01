@@ -60,10 +60,9 @@ router.get("/view/returned", verifyToken, async (req, resp) => {
 //get all books which are available for exchange
 router.get("/allBooks", verifyToken, async (req, resp) => {
   try {
-    const getAllBooks = await BOOK.find({ isAvailable: true }).populate(
-      "owner",
-      "username email"
-    );
+    const getAllBooks = await BOOK.find({})
+      .populate("owner", "username email")
+      .populate("holder", "username email");
     resp.status(200).json(getAllBooks);
   } catch (error) {
     resp.status(500).json({ message: error.message });
@@ -110,7 +109,7 @@ router.get("/view/requests", verifyToken, async (req, resp) => {
     const requests = await BOOK.find({
       owner: userId,
       isApproved: false,
-      requester: { $ne: null },
+      requester: { $ne: [] },
     }).populate("requester", "username email");
     resp.status(200).json(requests);
   } catch (error) {
@@ -119,27 +118,39 @@ router.get("/view/requests", verifyToken, async (req, resp) => {
   }
 });
 
-router.put("/approve/:bookId", verifyToken, async (req, resp) => {
+router.put("/approve_reject", verifyToken, async (req, resp) => {
   const userId = req.userId;
-  const { bookId } = req.params;
+  const { bookId, approvee, status } = req.query;
 
   try {
     if (!userId) {
       return resp.status(401).json({ error: "Un-authorized" });
     }
-
-    const book = await BOOK.findById(bookId)
-      .populate("requester", "username email")
-      .populate("owner", "username email");
-    if (!book) {
-      return resp.status(404).json({ error: "Book not found" });
+    if (status === "approve") {
+      await BOOK.findByIdAndUpdate(
+        bookId,
+        {
+          $set: {
+            isApproved: true,
+            holder: approvee,
+            requester: [],
+            isAvailable: false,
+          },
+        },
+        { new: true }
+      );
+    } else {
+      await BOOK.findByIdAndUpdate(
+        bookId,
+        {
+          isApproved: false,
+          holder: null,
+          $pull: { requester: approvee },
+          isAvailable: true,
+        },
+        { new: true }
+      );
     }
-    book.isApproved = true;
-    book.holder = book.requester._id;
-    book.requester = null;
-    book.isAvailable = false;
-    // console.log(book);
-    await book.save();
     const updatedBook = await BOOK.findById(bookId)
       .populate("requester", "username email")
       .populate("owner", "username email")
@@ -147,35 +158,20 @@ router.put("/approve/:bookId", verifyToken, async (req, resp) => {
     if (!updatedBook) {
       return resp.status(404).json({ error: "Book not found" });
     }
-    resp.status(200).json({
-      message: `Book approved successfully , the holder of book is ${updatedBook.holder.username}`,
-      updatedBook,
-    });
+    if (status === "reject") {
+      return resp.status(200).json({
+        message: "Rejected successfully",
+        updatedBook,
+      });
+    } else {
+      return resp.status(200).json({
+        message: `Book approved successfully , the holder of book is ${updatedBook?.holder?.username}`,
+        updatedBook,
+      });
+    }
   } catch (error) {
     console.log(error);
     resp.status(500).json({ error: "Server error while uploading book" });
-  }
-});
-
-router.put("/reject/:bookId", verifyToken, async (req, resp) => {
-  const { bookId } = req.params;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(bookId)) {
-      return resp.status(400).json({ error: "Invalid Book ID" });
-    }
-    const updatedBook = await BOOK.findByIdAndUpdate(
-      bookId,
-      { requester: null },
-      { new: true, runValidators: true }
-    );
-    return resp
-      .status(200)
-      .json({ message: "Request has been rejected"});
-  } catch (error) {
-    console.log(error);
-    return resp
-      .status(500)
-      .json({ error: "Server error while uploading book" });
   }
 });
 
@@ -206,7 +202,7 @@ router.post("/return/:bookId", verifyToken, async (req, resp) => {
     }
     book.isApproved = false;
     book.holder = null;
-    book.requester = null;
+    book.requester = [];
     book.isAvailable = true;
 
     //   // console.log(book);
@@ -231,10 +227,10 @@ router.get("/:bookId", verifyToken, async (req, resp) => {
     return resp.status(400).json({ error: "Invalid Book ID" });
   }
   try {
-    const books = await BOOK.findOne({
-      isAvailable: true,
-      _id: bookId,
-    }).populate("owner", "username email");
+    const books = await BOOK.findById(bookId).populate(
+      "owner",
+      "username email"
+    );
     if (!books) {
       return resp.status(404).json({ error: "No book Found" });
     }
@@ -263,34 +259,35 @@ router.post("/request/:bookId", verifyToken, async (req, resp) => {
       });
     }
 
-    const findBook = await BOOK.findById(bookId);
+    const findBook = await BOOK.findById(bookId)
+      .populate("owner", "username email")
+      .populate("holder", "username email");
 
-    if (String(findBook.owner) === String(userId)) {
+    if (String(findBook.owner._id) === String(userId)) {
       return resp.status(200).json({ error: "Cannot request your own book" });
     }
-
-    if (findBook.requester && String(findBook.requester) !== String(userId)) {
-      return resp
-        .status(200)
-        .json({ error: "Book is already requested by someone else" });
+    if (findBook.holder !== null) {
+      return resp.status(200).json({
+        error: `Book is already held by ${findBook?.holder?.username}`,
+      });
     }
 
     // If user is already the requester → cancel request
     let updatedBook;
-    if (String(findBook.requester) === String(userId)) {
+    if (findBook.requester.includes(String(userId))) {
       updatedBook = await BOOK.findOneAndUpdate(
         { _id: bookId, isAvailable: true, holder: null },
-        { requester: null },
+        { $pull: { requester: userId } },
         { new: true, runValidators: true }
       )
         .populate("requester", "username email")
         .populate("owner", "username email");
     }
     // If book is available and has no requester → request it
-    else if (!findBook.requester) {
+    else {
       updatedBook = await BOOK.findOneAndUpdate(
         { _id: bookId, isAvailable: true, holder: null },
-        { requester: userId },
+        { $push: { requester: userId } },
         { new: true, runValidators: true }
       )
         .populate("requester", "username email")

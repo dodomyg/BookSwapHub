@@ -37,6 +37,12 @@ const bookSchema = new Schema({
     required: true,
     unique: true,
   },
+  ratings: {
+    type: Number,
+    default: 0,
+    max: 5,
+    min: 0,
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "USER",
@@ -52,9 +58,9 @@ const bookSchema = new Schema({
     default: true,
   },
   requester: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "USER",
-    default: null,
+    default: [],
   },
   desc: {
     type: String,

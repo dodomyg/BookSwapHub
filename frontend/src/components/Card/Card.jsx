@@ -11,13 +11,16 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
-const Card = ({ title, author, frontPage, id, edition, owner }) => {
+const Card = ({ holder, title, author, frontPage, id, edition, owner }) => {
   return (
-    <Link to={`/book/${id}`} style={{ textDecoration: "none" }}>
+    <Link
+      to={!holder?.username ? `/book/${id}` : "#"}
+      style={{ textDecoration: "none" }}
+    >
       <Flex
         direction="column"
         w="220px"
-        h="400px"
+        height={'100%'}
         bg={useColorModeValue("white", "gray.800")}
         rounded="md"
         overflow="hidden"
@@ -25,14 +28,15 @@ const Card = ({ title, author, frontPage, id, edition, owner }) => {
         _hover={{ boxShadow: "lg", transform: "translateY(-4px)" }}
         transition="all 0.2s ease"
       >
-        <Image
+        <img
           src={frontPage}
           alt={title}
-          objectFit="cover"
-          w="100%"
-          h="160px"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
         />
-
         <Stack spacing={2} px={4} pt={3} flex="1">
           <Text
             fontSize="xs"
