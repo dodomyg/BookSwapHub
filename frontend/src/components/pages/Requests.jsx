@@ -26,6 +26,8 @@ const Requests = () => {
   const { user } = useContext(UserContext);
   const [req, setReq] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openAccordionBookId, setOpenAccordionBookId] = useState(null);
+  const [requestList, setRequestList] = useState([]);
   const toast = useToast();
 
   const fetchRequests = async () => {
@@ -47,8 +49,8 @@ const Requests = () => {
     fetchRequests();
   }, []);
 
-  const handleRequest = async (bookId, id, type) => {
-    const url = `http://localhost:8080/api/books/approve?bookId=${bookId}&approvee=${id}&status=${type}`;
+  const handleRequest = async (bookId, userId, type) => {
+    const url = `http://localhost:8080/api/books/approve_reject?bookId=${bookId}&approvee=${userId}&status=${type}`;
     try {
       const resp = await axios.put(url, { withCredentials: true });
       toast({
@@ -57,7 +59,18 @@ const Requests = () => {
         duration: 2000,
         isClosable: true,
       });
-      setReq((prev) => prev.filter((b) => b._id !== bookId));
+
+      // Remove the book if accepted or no requesters left
+      if (
+        type === "accept" ||
+        resp?.data?.updatedBook?.requester?.length === 0
+      ) {
+        setReq((prev) => prev.filter((b) => b._id !== bookId));
+        setOpenAccordionBookId(null);
+        setRequestList([]);
+      } else {
+        setRequestList(resp?.data?.updatedBook?.requester);
+      }
     } catch (error) {
       toast({
         title:
@@ -80,9 +93,9 @@ const Requests = () => {
       {req.length === 0 ? (
         <Text color="gray.500">No Requests Found</Text>
       ) : (
-        req.map((i) => (
+        req.map((book) => (
           <Card
-            key={i._id}
+            key={book._id}
             w="100%"
             maxW="700px"
             direction={{ base: "column", sm: "row" }}
@@ -92,12 +105,12 @@ const Requests = () => {
             boxShadow="sm"
             _hover={{ boxShadow: "md" }}
           >
-            <Box w="110px" h={"170px"} flexShrink={0}>
+            <Box w="110px" h="170px" flexShrink={0}>
               <Image
                 objectFit="cover"
                 w="100%"
                 h="100%"
-                src={i?.frontPage}
+                src={book.frontPage}
                 alt="Book Cover"
                 borderRadius="md"
               />
@@ -105,54 +118,79 @@ const Requests = () => {
 
             <Stack spacing={2} flex={1} p={3}>
               <CardBody pb={0}>
-                <Heading size="sm">{i?.title}</Heading>
+                <Heading size="sm">{book.title}</Heading>
                 <Text fontSize="sm" color="gray.600">
-                  {i?.author}
+                  {book.author}
                 </Text>
                 <Text fontSize="sm" color="gray.500">
-                  {i?.category.join(", ")}
+                  {book.category.join(", ")}
                 </Text>
               </CardBody>
 
               <Accordion allowToggle>
                 <AccordionItem>
-                  <AccordionButton px={0}>
+                  <AccordionButton
+                    px={0}
+                    onClick={() => {
+                      if (openAccordionBookId === book._id) {
+                        setOpenAccordionBookId(null);
+                        setRequestList([]);
+                      } else {
+                        setOpenAccordionBookId(book._id);
+                        setRequestList(book.requester || []);
+                      }
+                    }}
+                  >
                     <Box flex="1" textAlign="left">
                       <Text fontSize="sm" fontWeight="medium">
-                        {i?.requester?.length} Requesters
+                        {book.requester?.length} Requesters
                       </Text>
                     </Box>
                     <AccordionIcon />
                   </AccordionButton>
 
-                  <AccordionPanel px={0} pb={2}>
-                    <VStack align="start" spacing={4}>
-                      {i?.requester?.map((r) => (
-                        <Box
-                          key={r._id}
-                          p={2}
-                          borderWidth="1px"
-                          w="100%"
-                          borderRadius="md"
-                        >
-                          <Text fontWeight="semibold">{r.username}</Text>
-                          <Text fontSize="sm" color="gray.600">
-                            {r.email}
-                          </Text>
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() =>
-                              window.confirm(`Approve ${r.username}?`) &&
-                              handleRequest(i._id, r._id, "approve")
-                            }
+                  {openAccordionBookId === book._id && (
+                    <AccordionPanel px={0} pb={2}>
+                      <VStack align="start" spacing={4}>
+                        {requestList.map((r) => (
+                          <Box
+                            key={r._id}
+                            p={2}
+                            borderWidth="1px"
+                            w="100%"
+                            borderRadius="md"
                           >
-                            Approve
-                          </Button>
-                        </Box>
-                      ))}
-                    </VStack>
-                  </AccordionPanel>
+                            <Text fontWeight="semibold">{r.username}</Text>
+                            <Text fontSize="sm" color="gray.600">
+                              {r.email}
+                            </Text>
+                            <HStack mt={2}>
+                              <Button
+                                size="sm"
+                                colorScheme="green"
+                                onClick={() =>
+                                  window.confirm(`Approve ${r.username}?`) &&
+                                  handleRequest(book._id, r._id, "approve")
+                                }
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                colorScheme="red"
+                                onClick={() =>
+                                  window.confirm(`Reject ${r.username}?`) &&
+                                  handleRequest(book._id, r._id, "reject")
+                                }
+                              >
+                                Reject
+                              </Button>
+                            </HStack>
+                          </Box>
+                        ))}
+                      </VStack>
+                    </AccordionPanel>
+                  )}
                 </AccordionItem>
               </Accordion>
             </Stack>
