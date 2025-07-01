@@ -24,7 +24,6 @@ const Home = () => {
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [books, setBooks] = useState([]);
-  const [unAvailableBooks, setUnAvailableBooks] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const categories = [
@@ -65,23 +64,7 @@ const Home = () => {
         setLoading(false);
       }
     };
-
-    const fetchUnavailableBooks = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/books/notAvailable",
-          {
-            withCredentials: true,
-          }
-        );
-        setUnAvailableBooks(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     fetchBooks();
-    // fetchUnavailableBooks();
   }, []);
 
   if (!user) return null;
@@ -138,7 +121,7 @@ const Home = () => {
       {/* Book Display */}
       <Box flex="1">
         <Heading size="lg" mb={4}>
-          Available Books
+          All Books
         </Heading>
         <Divider mb={4} />
 
@@ -152,8 +135,9 @@ const Home = () => {
           </Text>
         ) : (
           <Flex wrap="wrap" gap={6}>
-            {filteredBooks.map((book) => (
+            {filteredBooks?.length > 0 && filteredBooks.map((book) => (
               <Card
+                holder={book?.holder}
                 key={book._id}
                 id={book._id}
                 title={book.title}
@@ -164,45 +148,6 @@ const Home = () => {
               />
             ))}
           </Flex>
-        )}
-
-        {/* Unavailable Books */}
-        {unAvailableBooks?.length > 0 && (
-          <>
-            <Heading size="md" mt={10} mb={3} color="gray.600">
-              Currently Unavailable Books
-            </Heading>
-            <Flex wrap="wrap" gap={6}>
-              {unAvailableBooks.map((book) => (
-                <Box position="relative" key={book._id}>
-                  <Card
-                    id={book._id}
-                    title={book.title}
-                    author={book.author}
-                    edition={book.edition}
-                    frontPage={book.frontPage}
-                    owner={book.owner?.username}
-                  />
-                  <Box
-                    position="absolute"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    bg="rgba(0,0,0,0.6)"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    borderRadius="md"
-                  >
-                    <Text color="white" fontWeight="bold">
-                      Not Available
-                    </Text>
-                  </Box>
-                </Box>
-              ))}
-            </Flex>
-          </>
         )}
       </Box>
     </Flex>

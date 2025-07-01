@@ -1,10 +1,6 @@
-// App/pages/Requests.jsx
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../context/UserContext";
-import axios from "axios";
 import {
   Flex,
-  HStack,
   Text,
   Card,
   Heading,
@@ -12,11 +8,18 @@ import {
   Image,
   useToast,
   CardBody,
-  CardFooter,
   Button,
-  Spinner,
   Box,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  VStack,
+  HStack,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 import Loader from "../CustomLoader/Loading";
 
 const Requests = () => {
@@ -25,32 +28,27 @@ const Requests = () => {
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const resp = await axios.get(
+        `http://localhost:8080/api/books/view/requests`,
+        { withCredentials: true }
+      );
+      setReq(resp.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        setLoading(true);
-        const resp = await axios.get(
-          `http://localhost:8080/api/books/view/requests`,
-          {
-            withCredentials: true,
-          }
-        );
-        setReq(resp.data);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error(error);
-      }
-    };
     fetchRequests();
   }, []);
 
-  const handleRequest = async (id, type) => {
-    const url =
-      type === "approve"
-        ? `http://localhost:8080/api/books/approve/${id}`
-        : `http://localhost:8080/api/books/reject/${id}`;
-
+  const handleRequest = async (bookId, id, type) => {
+    const url = `http://localhost:8080/api/books/approve?bookId=${bookId}&approvee=${id}&status=${type}`;
     try {
       const resp = await axios.put(url, { withCredentials: true });
       toast({
@@ -59,9 +57,8 @@ const Requests = () => {
         duration: 2000,
         isClosable: true,
       });
-      setReq((prev) => prev.filter((b) => b._id !== id));
+      setReq((prev) => prev.filter((b) => b._id !== bookId));
     } catch (error) {
-      console.error(error);
       toast({
         title:
           error?.response?.data?.error ||
@@ -75,73 +72,89 @@ const Requests = () => {
 
   if (!user) return null;
   if (loading) return <Loader />;
-  return (
-    <Flex flexDir={"column"} alignItems={"center"} gap={5}>
-      <Text fontWeight={"600"} fontSize={"xl"}>
-        Book Swap Requests
-      </Text>
 
-      {!loading && req.length === 0 ? (
-        <Text textAlign="center" color="gray.500" maxW="850px">
-          No Requests Found
-        </Text>
+  return (
+    <Flex direction="column" align="center" gap={5}>
+      <Heading size="md">Book Swap Requests</Heading>
+
+      {req.length === 0 ? (
+        <Text color="gray.500">No Requests Found</Text>
       ) : (
-        !loading &&
         req.map((i) => (
           <Card
             key={i._id}
-            width={{ base: "100%", sm: "850px" }}
+            w="100%"
+            maxW="700px"
             direction={{ base: "column", sm: "row" }}
             overflow="hidden"
-            borderRadius="md"
-            boxShadow="sm"
             border="1px solid"
             borderColor="gray.200"
-            _hover={{
-              boxShadow: "lg",
-              transform: "scale(1.01)",
-              transition: "0.2s",
-            }}
+            boxShadow="sm"
+            _hover={{ boxShadow: "md" }}
           >
-            <Image
-              objectFit="cover"
-              maxW={{ base: "100%", sm: "130px" }}
-              src={i?.frontPage}
-              alt="Book Cover"
-            />
+            <Box w="110px" h={"170px"} flexShrink={0}>
+              <Image
+                objectFit="cover"
+                w="100%"
+                h="100%"
+                src={i?.frontPage}
+                alt="Book Cover"
+                borderRadius="md"
+              />
+            </Box>
 
-            <Stack spacing={2} flex={1} p={4}>
-              <CardBody>
-                <Heading size="md">{i?.title}</Heading>
+            <Stack spacing={2} flex={1} p={3}>
+              <CardBody pb={0}>
+                <Heading size="sm">{i?.title}</Heading>
                 <Text fontSize="sm" color="gray.600">
                   {i?.author}
                 </Text>
+                <Text fontSize="sm" color="gray.500">
+                  {i?.category.join(", ")}
+                </Text>
               </CardBody>
 
-              <HStack px={4}>
-                <Text fontSize="sm">Requester:</Text>
-                <Text as="b">{i?.requester?.username}</Text>
-              </HStack>
+              <Accordion allowToggle>
+                <AccordionItem>
+                  <AccordionButton px={0}>
+                    <Box flex="1" textAlign="left">
+                      <Text fontSize="sm" fontWeight="medium">
+                        {i?.requester?.length} Requesters
+                      </Text>
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
 
-              <HStack px={4} flexWrap="wrap">
-                <Text fontSize="sm">Category:</Text>
-                <Text as="b">{i?.category.join(", ")}</Text>
-              </HStack>
-
-              <CardFooter display="flex" gap={4}>
-                <Button
-                  onClick={() => handleRequest(i._id, "approve")}
-                  colorScheme="blue"
-                >
-                  Approve {i?.requester?.username}
-                </Button>
-                <Button
-                  onClick={() => handleRequest(i._id, "reject")}
-                  colorScheme="red"
-                >
-                  Reject {i?.requester?.username}
-                </Button>
-              </CardFooter>
+                  <AccordionPanel px={0} pb={2}>
+                    <VStack align="start" spacing={4}>
+                      {i?.requester?.map((r) => (
+                        <Box
+                          key={r._id}
+                          p={2}
+                          borderWidth="1px"
+                          w="100%"
+                          borderRadius="md"
+                        >
+                          <Text fontWeight="semibold">{r.username}</Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {r.email}
+                          </Text>
+                          <Button
+                            size="sm"
+                            colorScheme="green"
+                            onClick={() =>
+                              window.confirm(`Approve ${r.username}?`) &&
+                              handleRequest(i._id, r._id, "approve")
+                            }
+                          >
+                            Approve
+                          </Button>
+                        </Box>
+                      ))}
+                    </VStack>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
             </Stack>
           </Card>
         ))

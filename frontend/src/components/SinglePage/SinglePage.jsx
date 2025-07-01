@@ -41,9 +41,9 @@ const SinglePage = () => {
             withCredentials: true,
           }
         );
-        console.log(data, "DATA");
+        console.log(data);
         setBook(data);
-        setReq(data?.requester === user?._id);
+        setReq(data?.requester.includes(user?._id));
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -105,7 +105,7 @@ const SinglePage = () => {
     <Container maxW="7xl" py={{ base: 8, md: 14 }}>
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={10}>
         <VStack spacing={6} align="center">
-          {book?.frontPage && (
+          {book?.frontPage !== null && (
             <Image
               src={book?.frontPage}
               alt="Front Page"
@@ -116,7 +116,7 @@ const SinglePage = () => {
               boxShadow="md"
             />
           )}
-          {book?.backPage && (
+          {book?.backPage !== null && (
             <Image
               src={book?.backPage}
               alt="Back Page"

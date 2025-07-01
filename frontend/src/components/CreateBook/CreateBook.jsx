@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState } from "react";
+import { CiStar } from "react-icons/ci";
 import {
   FormControl,
   Input,
@@ -27,6 +28,13 @@ import Loader from "../CustomLoader/Loading";
 axios.defaults.withCredentials = true;
 
 const CreateBook = () => {
+  const stars = [
+    <CiStar size={30} />,
+    <CiStar size={30} />,
+    <CiStar size={30} />,
+    <CiStar size={30} />,
+    <CiStar size={30} />,
+  ];
   const { user } = useContext(UserContext);
   const [uid, _] = useState(uuid());
   const toast = useToast();
@@ -39,6 +47,7 @@ const CreateBook = () => {
     frontPage: null,
     backPage: null,
     categories: [""],
+    ratings: 0,
   });
 
   const [loading, setLoading] = useState(false);
@@ -87,8 +96,16 @@ const CreateBook = () => {
     e.preventDefault();
 
     // Validation: Required fields
-    const { title, author, isbn, edition, categories, frontPage, backPage } =
-      bookData;
+    const {
+      title,
+      author,
+      isbn,
+      edition,
+      categories,
+      frontPage,
+      backPage,
+      ratings,
+    } = bookData;
     if (!title || !author || !isbn || !edition) {
       toast({
         title: "Missing Fields",
@@ -98,6 +115,10 @@ const CreateBook = () => {
         isClosable: true,
       });
       return;
+    }
+
+    if (ratings === 0) {
+      ratings = 2;
     }
 
     // Validation: Category at least one
@@ -247,6 +268,29 @@ const CreateBook = () => {
             </FormControl>
           </WrapItem>
         </Wrap>
+
+        <FormControl my={10}>
+          <FormLabel>Ratings</FormLabel>
+          <HStack>
+            {stars.map((_, index) => (
+              <Box
+                key={index}
+                onClick={() => setBookData({ ...bookData, ratings: index + 1 })}
+                cursor="pointer"
+                p="1"
+                rounded="full"
+                bg={bookData.ratings > index ? "yellow.300" : "gray.200"}
+                transition="all 0.2s"
+                _hover={{ bg: "yellow.400" }}
+              >
+                <CiStar size={24} />
+              </Box>
+            ))}
+            <Text fontSize="sm" ml={2}>
+              {bookData.ratings} / 5
+            </Text>
+          </HStack>
+        </FormControl>
 
         <Box my={6}>
           <FormLabel>Categories</FormLabel>
