@@ -13,24 +13,23 @@ import {
 import { FaBookOpen, FaHandshake, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-// AI Powered Rainbow Badge
-const RainbowBadge = ({ children }: { children: React.ReactNode }) => (
+// Animated Rainbow Badge for AI Powered
+const RainbowBadge = ({ children }) => (
   <Box
     as="span"
     px={3}
     py={1}
     fontWeight="bold"
     fontSize="md"
-    bg="white"
+    bg="black.700"
     color="gray.800"
     borderRadius="full"
     boxShadow="sm"
     display="inline-block"
     position="relative"
     mr={2}
+    border="3px solid"
     sx={{
-      backgroundClip: "padding-box",
-      border: "3px solid",
       borderImage: "linear-gradient(90deg, #ff007a, #ffae00, #00ff95, #00cfff, #a700ff) 1",
       animation: "rainbow 3s linear infinite",
       "@keyframes rainbow": {
@@ -90,13 +89,13 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Box minH="100vh" w="full" position="relative" overflow="hidden" bg="gray.50">
+    <Box fontSize={12} minH="100vh" w="full" position="relative" overflow="hidden">
       <Backdrop />
 
       {/* Header & Brand */}
       <Container maxW="container.md" pt={16} centerContent>
         <Heading
-          fontSize={["2.5rem", "3rem", "3.5rem"]}
+          fontSize={["2.2rem", "2.7rem", "3.2rem"]}
           fontWeight="extrabold"
           textAlign="center"
           color="gray.900"
@@ -105,7 +104,7 @@ const LandingPage = () => {
           BookSwapHub
         </Heading>
         <Text fontSize="lg" textAlign="center">
-          <RainbowBadge>AI Powered</RainbowBadge>
+          <RainbowBadge>New</RainbowBadge>
           BookSwapHub powered by AI ✨
         </Text>
         <Text fontSize="xl" color="gray.600" mt={2} textAlign="center">
@@ -113,25 +112,6 @@ const LandingPage = () => {
             A friendly platform for book lovers to connect, swap, and return books safely.
           </i>
         </Text>
-        <Stack direction={["column", "row"]} mt={6} spacing={4} justify="center" align="center">
-          <Button
-            colorScheme="blue"
-            size="lg"
-            onClick={() => navigate("/register")}
-            fontWeight="bold"
-            boxShadow="md"
-          >
-            Get Started Free
-          </Button>
-          <Button
-            colorScheme="gray"
-            size="lg"
-            variant="outline"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
-        </Stack>
       </Container>
 
       {/* Features - aligned horizontally */}
@@ -207,7 +187,6 @@ const LandingPage = () => {
 
       {/* Footer */}
       <Box
-        mt={24}
         py={6}
         textAlign="center"
         color="gray.500"
