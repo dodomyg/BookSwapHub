@@ -23,6 +23,7 @@ const UserSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    favBooks:[mongoose.Schema.Types.ObjectId],
     adhaarNum: {
       type: String,
       required: true,
