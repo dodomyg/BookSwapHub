@@ -2,6 +2,7 @@ const express = require("express");
 const verifyToken = require("../middleware/verifyToken");
 const BOOK = require("../Schema/BOOK");
 const { default: mongoose } = require("mongoose");
+const USER = require("../Schema/USER");
 const router = express.Router();
 
 router.post("/create", verifyToken, async (req, res) => {
@@ -117,6 +118,51 @@ router.get("/view/requests", verifyToken, async (req, resp) => {
     resp.status(500).json({ error: "Server error in viewing requests" });
   }
 });
+
+//mark book as fav
+router.patch("/update", verifyToken, async (req, resp) => {
+  const { favBook } = req.query;
+  const userId = req.userId;
+
+  try {
+    if (!userId) {
+      return resp.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!favBook) {
+      return resp.status(400).json({ error: "No book ID provided" });
+    }
+
+    if (req.body.fav !== undefined) {
+      // Make sure fav is provided
+      if (req.body.fav) {
+        const neww = await USER.findByIdAndUpdate(
+          userId,
+          { $push: { favBooks: favBook } },
+          { new: true } // Only update without upsert if the user exists
+        );
+      } else {
+        console.log("Removing from favorites");
+        const oldd = await USER.findByIdAndUpdate(
+          userId,
+          { $pull: { favBooks: favBook } },
+          { new: true } // Only update without upsert if the user exists
+        );
+      }
+
+      return resp.status(200).json({
+        message: "Book updated successfully",
+      });
+    } else {
+      return resp
+        .status(400)
+        .json({ error: "fav field is required in request body" });
+    }
+  } catch (error) {
+    console.error(error);
+    return resp.status(500).json({ error: "Server error in updating book" });
+  }
+}); 
 
 router.put("/approve_reject", verifyToken, async (req, resp) => {
   const userId = req.userId;

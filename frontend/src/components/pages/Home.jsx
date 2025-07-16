@@ -9,9 +9,7 @@ import {
   Heading,
   Divider,
   Spinner,
-  VStack,
-  HStack,
-  Button,
+  useToast,
 } from "@chakra-ui/react";
 import { UserContext } from "../../context/UserContext";
 import Card from "../Card/Card";
@@ -46,26 +44,63 @@ const Home = () => {
       (category === "" || b?.category?.includes(category))
     );
   });
+  const toast = useToast();
+
+  const fetchBooks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/books/allBooks",
+        {
+          withCredentials: true,
+        }
+      );
+      setBooks(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/books/allBooks",
-          {
-            withCredentials: true,
-          }
-        );
-        setBooks(response.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchBooks();
   }, []);
+
+  const markFav = async (book) => {
+    setLoading(true);
+    const isFav = user?.favBooks?.includes(book?._id);
+    const newFavState = !isFav;
+
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/books/update?favBook=${book._id}`,
+        {
+          fav: newFavState,
+        },
+        { withCredentials: true }
+      );
+
+      toast({
+        title: `Book ${newFavState ? "added to" : "removed from"} favorites`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      fetchBooks(); // refresh UI
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Failed to update favorite status",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -135,18 +170,21 @@ const Home = () => {
           </Text>
         ) : (
           <Flex wrap="wrap" gap={6}>
-            {filteredBooks?.length > 0 && filteredBooks.map((book) => (
-              <Card
-                holder={book?.holder}
-                key={book._id}
-                id={book._id}
-                title={book.title}
-                author={book.author}
-                edition={book.edition}
-                frontPage={book.frontPage}
-                owner={book.owner?.username}
-              />
-            ))}
+            {filteredBooks?.length > 0 &&
+              filteredBooks.map((book) => (
+                <Card
+                  holder={book?.holder}
+                  key={book._id}
+                  id={book._id}
+                  title={book.title}
+                  author={book.author}
+                  edition={book.edition}
+                  frontPage={book.frontPage}
+                  owner={book.owner?.username}
+                  book={book}
+                  markFav={markFav}
+                />
+              ))}
           </Flex>
         )}
       </Box>
