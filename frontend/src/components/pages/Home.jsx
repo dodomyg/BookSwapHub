@@ -67,40 +67,6 @@ const Home = () => {
     fetchBooks();
   }, []);
 
-  const markFav = async (book) => {
-    setLoading(true);
-    const isFav = user?.favBooks?.includes(book?._id);
-    const newFavState = !isFav;
-
-    try {
-      await axios.patch(
-        `http://localhost:8080/api/books/update?favBook=${book._id}`,
-        {
-          fav: newFavState,
-        },
-        { withCredentials: true }
-      );
-
-      toast({
-        title: `Book ${newFavState ? "added to" : "removed from"} favorites`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-
-      fetchBooks(); // refresh UI
-    } catch (error) {
-      console.log(error);
-      toast({
-        title: "Failed to update favorite status",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!user) return null;
 
@@ -182,7 +148,6 @@ const Home = () => {
                   frontPage={book.frontPage}
                   owner={book.owner?.username}
                   book={book}
-                  markFav={markFav}
                 />
               ))}
           </Flex>

@@ -8,40 +8,26 @@ import {
   useColorModeValue,
   HStack,
   Flex,
-  Icon,
 } from "@chakra-ui/react";
-import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { MdFavoriteBorder } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import { useContext } from "react";
 
-const Card = ({
-  holder,
-  title,
-  author,
-  frontPage,
-  id,
-  edition,
-  owner,
-  book,
-  markFav,
-}) => {
-  const { user } = useContext(UserContext);
+const Card = ({ holder, title, author, frontPage, id, edition, owner,book }) => {
   return (
-    <Flex
-      direction="column"
-      w="220px"
-      height={"100%"}
-      bg={useColorModeValue("white", "gray.800")}
-      rounded="md"
-      overflow="hidden"
-      boxShadow="md"
-      _hover={{ boxShadow: "lg", transform: "translateY(-4px)" }}
-      transition="all 0.2s ease"
+    <Link
+      to={!holder?.username ? `/book/${id}` : "#"}
+      style={{ textDecoration: "none" }}
     >
-      <Link
-        to={!holder?.username ? `/book/${id}` : "#"}
-        style={{ textDecoration: "none" }}
+      <Flex
+        direction="column"
+        w="220px"
+        height={'100%'}
+        bg={useColorModeValue("white", "gray.800")}
+        rounded="md"
+        overflow="hidden"
+        boxShadow="md"
+        _hover={{ boxShadow: "lg", transform: "translateY(-4px)" }}
+        transition="all 0.2s ease"
       >
         <img
           src={frontPage}
@@ -52,7 +38,6 @@ const Card = ({
             objectFit: "cover",
           }}
         />
-
         <Stack spacing={2} px={4} pt={3} flex="1">
           <Text
             fontSize="xs"
@@ -72,42 +57,20 @@ const Card = ({
             Edition: {edition || "N/A"}
           </Text>
         </Stack>
-      </Link>
 
-      <HStack
-        justifyContent={"space-between"}
-        px={4}
-        pb={4}
-        spacing={3}
-        mt="auto"
-      >
-        <Avatar name={owner} size="sm" />
-        <Box>
-          <Text fontSize="sm" fontWeight="semibold" noOfLines={1}>
-            {owner}
-          </Text>
-          <Text fontSize="xs" color="gray.400">
-            #{id?.slice(-5)}
-          </Text>
-        </Box>
-
-        {user?.favBooks?.includes(book._id) ? (
-          <MdFavorite
-            size={24}
-            color="red"
-            cursor="pointer"
-            onClick={() => markFav(book)}
-          />
-        ) : (
-          <MdFavoriteBorder
-            size={24}
-            color="gray"
-            cursor="pointer"
-            onClick={() => markFav(book)}
-          />
-        )}
-      </HStack>
-    </Flex>
+        <HStack px={4} pb={4} spacing={3} mt="auto">
+          <Avatar name={owner} size="sm" />
+          <Box>
+            <Text fontSize="sm" fontWeight="semibold" noOfLines={1}>
+              {owner}
+            </Text>
+            <Text fontSize="xs" color="gray.400">
+              #{id?.slice(-5)}
+            </Text>
+          </Box>
+        </HStack>
+      </Flex>
+    </Link>
   );
 };
 

@@ -15,6 +15,7 @@ import Preferences from './components/pages/Preferences';
 import CommunityChat from './components/CommunityChat/CommunityChat';
 import { IconButton } from '@chakra-ui/react';
 import { IoChatboxOutline } from 'react-icons/io5';
+import Favourites from './components/pages/Favourites';
 
 const App = () => {
   const { user } = useContext(UserContext);
@@ -45,6 +46,7 @@ const App = () => {
         <Route path="/landing" element={!user ? <LandingPage /> : <Navigate to="/" />} />
         <Route path="/preferences" element={user ? <Preferences /> : <Navigate to="/" />} />
         <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+        <Route path="/saved" element={user ? <Favourites /> : <Navigate to="/" />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
         <Route path="/" element={user ? <Home /> : <Navigate to="/landing" />} />
         <Route path="/create" element={user ? <CreateBook /> : <Navigate to="/" />} />
