@@ -79,7 +79,7 @@ router.get("/jwt", verifyToken, async (req, resp) => {
     if (!userId) {
       return resp.status(404).json({ message: "Un-authorized,log in first" });
     }
-    const getFullUser = await USER.findById(userId);
+    const getFullUser = await USER.findById(userId).populate("favBooks")
     resp.status(200).json(getFullUser);
   } catch (error) {
     console.log("error in jwt fetching : ", error);

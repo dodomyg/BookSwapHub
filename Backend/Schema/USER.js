@@ -23,7 +23,11 @@ const UserSchema = new mongoose.Schema(
       ],
       default: [],
     },
-    favBooks:[mongoose.Schema.Types.ObjectId],
+    favBooks:{
+      type:[mongoose.Schema.Types.ObjectId],
+      ref:"BOOK",
+      default:[]
+    },
     adhaarNum: {
       type: String,
       required: true,

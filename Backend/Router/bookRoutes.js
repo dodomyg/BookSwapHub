@@ -136,14 +136,14 @@ router.patch("/update", verifyToken, async (req, resp) => {
     if (req.body.fav !== undefined) {
       // Make sure fav is provided
       if (req.body.fav) {
-        const neww = await USER.findByIdAndUpdate(
+        await USER.findByIdAndUpdate(
           userId,
           { $push: { favBooks: favBook } },
           { new: true } // Only update without upsert if the user exists
         );
       } else {
         console.log("Removing from favorites");
-        const oldd = await USER.findByIdAndUpdate(
+        await USER.findByIdAndUpdate(
           userId,
           { $pull: { favBooks: favBook } },
           { new: true } // Only update without upsert if the user exists

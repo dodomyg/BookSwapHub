@@ -19,12 +19,13 @@ import {
 import axios from "axios";
 import { FaIdCardAlt } from "react-icons/fa";
 import ChatButton from "../ChatButton/ChatButton";
-import { UserContext } from "../../context/UserContext";
+import { getUser, UserContext } from "../../context/UserContext";
 import Loader from "../CustomLoader/Loading";
+import { MdFavoriteBorder } from "react-icons/md";
 
 const SinglePage = () => {
   const { bookId } = useParams();
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const toast = useToast();
 
   const [book, setBook] = useState(null);
@@ -41,7 +42,6 @@ const SinglePage = () => {
             withCredentials: true,
           }
         );
-        console.log(data);
         setBook(data);
         setReq(data?.requester.includes(user?._id));
         setLoading(false);
@@ -55,6 +55,39 @@ const SinglePage = () => {
 
     if (bookId && user) fetchSingleBook();
   }, [bookId, user]);
+
+  const markFav = async () => {
+    const isFav =
+      user?.favBooks?.length > 0 && user?.favBooks?.find((b)=> b._id === book._id);
+    const newFavState = !isFav;
+
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/books/update?favBook=${book._id}`,
+        {
+          fav: newFavState,
+        },
+        { withCredentials: true }
+      );
+
+      toast({
+        title: `Book ${newFavState ? "added to" : "removed from"} favorites`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      getUser(setUser);
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Failed to update favorite status",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+    }
+  };
 
   const requestBook = async () => {
     try {
@@ -134,9 +167,24 @@ const SinglePage = () => {
             <Heading fontSize={{ base: "2xl", md: "4xl" }}>
               {book?.title}
             </Heading>
-            <Text fontSize="xl" color="gray.600" mt={2}>
-              by {book?.author}
-            </Text>
+            <HStack justifyContent={"space-between"}>
+              <Text fontSize="xl" color="gray.600" mt={2}>
+                by {book?.author}
+              </Text>
+              {user?._id !== book?.owner?._id && (
+                <MdFavoriteBorder
+                  size={30}
+                  cursor={"pointer"}
+                  color={
+                    user?.favBooks?.length > 0 &&
+                    user?.favBooks?.find((b)=>b._id===book?._id)
+                      ? "red"
+                      : "gray"
+                  }
+                  onClick={() => markFav()}
+                />
+              )}
+            </HStack>
           </Box>
 
           <Stack spacing={4} divider={<StackDivider borderColor="gray.200" />}>
