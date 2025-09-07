@@ -26,6 +26,14 @@ app.use("/api/chat",chatRoutes)
 app.use("/api/message",messageRoutes)
 app.use("/api/aichat",aiChat)
 
+app.get("/",(req,resp)=>{
+    try {
+        resp.send("SERVER RUNNING 🔥")
+    } catch (error) {
+        console.log(error)
+    }
+},)
+
 
 const PORT = process.env.PORT || 8080
 
