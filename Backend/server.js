@@ -15,6 +15,7 @@ const cookieParser=require('cookie-parser')
 const app = express()
 origins = [
     "http://localhost:3000",
+    "bookswaphub-one.vercel.app",
     "https://bookswaphub-76z3sxdar-dodomygs-projects.vercel.app/"
 ]
 app.use(cors({
