@@ -13,13 +13,13 @@ const cookieParser=require('cookie-parser')
 
 
 const app = express()
-origins = [
-    "http://localhost:3000",
-    "https://bookswaphub-one.vercel.app/",
-    "https://bookswaphub-76z3sxdar-dodomygs-projects.vercel.app/"
-]
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://bookswaphub-one.vercel.app",
+  "https://bookswaphub-76z3sxdar-dodomygs-projects.vercel.app"
+];
 app.use(cors({
-    origin: origins,
+    origin: allowedOrigins,
     credentials: true,
 }))
 app.use(express.json())
