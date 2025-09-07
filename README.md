@@ -2,9 +2,8 @@
 
 **BookSwapHub** is a full-stack platform that enables readers to swap books effortlessly. The application encourages sustainable reading, reduces book acquisition costs, and builds a community of readers who love sharing stories. It integrates advanced features like real-time chat, AI-powered book recommendations, category filtering, return policy, and more.
 
-![BookSwap Hub Animation](https://example.com/bookswap-hub-animation.gif)
+![BookSwap Hub Animation](https://example.com/bookswap-hub-animation.gif)( https://bookswaphub-one.vercel.app )
 
-Live(https://bookswaphub-one.vercel.app/)
 
 HLD :
 ![FlowChart](https://github.com/user-attachments/assets/2ec5b4f8-bdf1-4a18-a369-7af3108a8349)
