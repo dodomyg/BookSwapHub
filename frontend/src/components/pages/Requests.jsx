@@ -34,7 +34,7 @@ const Requests = () => {
     setLoading(true);
     try {
       const resp = await axios.get(
-        `http://localhost:8080/api/books/view/requests`,
+        `https://bookswaphub-ejar.onrender.com/api/books/view/requests`,
         { withCredentials: true }
       );
       setReq(resp.data);
@@ -50,7 +50,7 @@ const Requests = () => {
   }, []);
 
   const handleRequest = async (bookId, userId, type) => {
-    const url = `http://localhost:8080/api/books/approve_reject?bookId=${bookId}&approvee=${userId}&status=${type}`;
+    const url = `https://bookswaphub-ejar.onrender.com/api/books/approve_reject?bookId=${bookId}&approvee=${userId}&status=${type}`;
     try {
       const resp = await axios.put(url, { withCredentials: true });
       toast({

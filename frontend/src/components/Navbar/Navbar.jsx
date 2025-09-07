@@ -40,7 +40,7 @@ const Navbar = () => {
 
   const logOut = async () => {
     try {
-      const resp = await axios.post("http://localhost:8080/api/users/logout", {}, {
+      const resp = await axios.post("https://bookswaphub-ejar.onrender.com/api/users/logout", {}, {
         withCredentials: true,
       });
       setUser(null);

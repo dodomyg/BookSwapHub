@@ -32,7 +32,7 @@ const Holdings = () => {
       try {
         setLoading(true);
         const resp = await axios.get(
-          "http://localhost:8080/api/books/holdings",
+          "https://bookswaphub-ejar.onrender.com/api/books/holdings",
           { withCredentials: true }
         );
         setHoldings(resp.data);
@@ -49,7 +49,7 @@ const Holdings = () => {
   const returnBook = async (id) => {
     try {
       const resp = await axios.post(
-        `http://localhost:8080/api/books/return/${id}`,
+        `https://bookswaphub-ejar.onrender.com/api/books/return/${id}`,
         {
           withCredentials: true,
         }

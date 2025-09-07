@@ -32,7 +32,7 @@ const ChatButton = ({ owner }) => {
   const createChat = async () => {
     try {
       const resp = await axios.post(
-        `http://localhost:8080/api/chat/createChat/${owner?._id}`,
+        `https://bookswaphub-ejar.onrender.com/api/chat/createChat/${owner?._id}`,
         { withCredentials: true }
       );
       setSelectedChat(resp?.data[0]?._id);
@@ -75,7 +75,7 @@ const ChatButton = ({ owner }) => {
         // if (!chat.length) return; // Exit if chat array is empty
         // const chatId = chat[chat.length - 1]._id; // Get the chat ID of the last chat in the array
         const resp = await axios.get(
-          `http://localhost:8080/api/message/allMessages/${selectedChat}`,
+          `https://bookswaphub-ejar.onrender.com/api/message/allMessages/${selectedChat}`,
           { withCredentials: true }
         );
         setMessages(resp.data); // Assuming the API returns messages in the 'messages' property
@@ -115,7 +115,7 @@ const ChatButton = ({ owner }) => {
     try {
       if (e.key === "Enter") {
         const resp = await axios.post(
-          `http://localhost:8080/api/message/sendMessage/${selectedChat}`,
+          `https://bookswaphub-ejar.onrender.com/api/message/sendMessage/${selectedChat}`,
           { message: newMessage },
           { withCredentials: true }
         );

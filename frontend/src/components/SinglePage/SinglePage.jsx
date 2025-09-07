@@ -37,7 +37,7 @@ const SinglePage = () => {
       setLoading(true);
       try {
         const { data } = await axios.get(
-          `http://localhost:8080/api/books/${bookId}`,
+          `https://bookswaphub-ejar.onrender.com/api/books/${bookId}`,
           {
             withCredentials: true,
           }
@@ -63,7 +63,7 @@ const SinglePage = () => {
 
     try {
       await axios.patch(
-        `http://localhost:8080/api/books/update?favBook=${book._id}`,
+        `https://bookswaphub-ejar.onrender.com/api/books/update?favBook=${book._id}`,
         {
           fav: newFavState,
         },
@@ -92,7 +92,7 @@ const SinglePage = () => {
   const requestBook = async () => {
     try {
       const { data } = await axios.post(
-        `http://localhost:8080/api/books/request/${bookId}`,
+        `https://bookswaphub-ejar.onrender.com/api/books/request/${bookId}`,
         {},
         { withCredentials: true }
       );

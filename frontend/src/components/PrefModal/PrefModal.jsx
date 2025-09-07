@@ -51,7 +51,7 @@ const PrefModal = ({
     };
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/users/preferences",
+        "https://bookswaphub-ejar.onrender.com/api/users/preferences",
         payload,
         { withCredentials: true }
       );

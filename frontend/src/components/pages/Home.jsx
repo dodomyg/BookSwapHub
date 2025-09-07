@@ -15,6 +15,7 @@ import { UserContext } from "../../context/UserContext";
 import Card from "../Card/Card";
 import axios from "axios";
 import Loader from "../CustomLoader/Loading";
+axios.defaults.withCredentials = true;
 
 const Home = () => {
   const { user } = useContext(UserContext);
@@ -50,7 +51,7 @@ const Home = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/books/allBooks",
+        "https://bookswaphub-ejar.onrender.com/api/books/allBooks",
         {
           withCredentials: true,
         }

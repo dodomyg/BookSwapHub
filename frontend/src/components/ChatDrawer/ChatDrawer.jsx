@@ -57,7 +57,7 @@ function ChatDrawer({ owner }) {
     onModalOpen(); // Open the modal
     try {
       const resp = await axios.post(
-        `http://localhost:8080/api/chat/createChat/${otherId}`,
+        `https://bookswaphub-ejar.onrender.com/api/chat/createChat/${otherId}`,
         { withCredentials: true }
       );
       console.log(resp.data,"resp.data")
@@ -78,7 +78,7 @@ function ChatDrawer({ owner }) {
     const fetchFeed = async () => {
       try {
         const resp = await axios.post(
-          `http://localhost:8080/api/chat/createChat/${owner?._id}`,
+          `https://bookswaphub-ejar.onrender.com/api/chat/createChat/${owner?._id}`,
           { withCredentials: true }
         );
         setFeed(resp.data);
@@ -95,7 +95,7 @@ function ChatDrawer({ owner }) {
       if (!selectedChat) return;
       try {
         const resp = await axios.get(
-          `http://localhost:8080/api/message/allMessages/${selectedChat}`,
+          `https://bookswaphub-ejar.onrender.com/api/message/allMessages/${selectedChat}`,
           { withCredentials: true }
         );
         setMessages(resp.data);
@@ -114,7 +114,7 @@ function ChatDrawer({ owner }) {
 
     try {
       const resp = await axios.post(
-        `http://localhost:8080/api/message/sendMessage/${selectedChat}`,
+        `https://bookswaphub-ejar.onrender.com/api/message/sendMessage/${selectedChat}`,
         { message: newMessage },
         { withCredentials: true }
       );

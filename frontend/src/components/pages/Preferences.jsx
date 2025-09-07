@@ -48,7 +48,7 @@ const BookChat = () => {
     const fetchSessionData = async () => {
       try {
         const resp = await axios.get(
-          "http://localhost:8080/api/aiChat/currentSession",
+          "https://bookswaphub-ejar.onrender.com/api/aiChat/currentSession",
           { withCredentials: true }
         );
         setSessionData(resp?.data);
@@ -94,7 +94,7 @@ const BookChat = () => {
 
     try {
       const resp = await axios.post(
-        `http://localhost:8080/api/aiChat/ask?session_id=${sessionData.sessionId}`,
+        `https://bookswaphub-ejar.onrender.com/api/aiChat/ask?session_id=${sessionData.sessionId}`,
         { query: currentQuery }
       );
 
@@ -122,7 +122,7 @@ const BookChat = () => {
   const deleteSession = async () => {
     try {
       const resp = await axios.put(
-        `http://localhost:8080/api/aiChat/deleteSession?session_id=${sessionData?.sessionId}`,
+        `https://bookswaphub-ejar.onrender.com/api/aiChat/deleteSession?session_id=${sessionData?.sessionId}`,
         {},
         { withCredentials: true }
       );

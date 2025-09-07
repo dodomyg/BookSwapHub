@@ -61,10 +61,11 @@ router.post("/login", async (req, resp) => {
       expiresIn: "5h",
     });
     resp.cookie("jwtToken", token, {
-      path: "/",
       httpOnly: true,
-      sameSite: "lax",
-      expires: new Date(Date.now() + 1000 * 21600),
+      secure: true,           // Required on HTTPS (Vercel + Render = YES)
+      sameSite: "None",       // Required for cross-origin
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 5 // 5 hours
     });
     resp.status(201).json({ message: "User Logged In", alreadyUser, token });
   } catch (error) {

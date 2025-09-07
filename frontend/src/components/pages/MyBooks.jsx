@@ -31,7 +31,7 @@ const MyBooks = () => {
       try {
         setLoading(true);
         const resp = await axios.get(
-          `http://localhost:8080/api/books/myBooks`,
+          `https://bookswaphub-ejar.onrender.com/api/books/myBooks`,
           {
             withCredentials: true,
           }
@@ -48,7 +48,7 @@ const MyBooks = () => {
 
   const deleteBook = async (id) => {
     try {
-      const resp = await axios.delete(`http://localhost:8080/api/books/${id}`, {
+      const resp = await axios.delete(`https://bookswaphub-ejar.onrender.com/api/books/${id}`, {
         withCredentials: true,
       });
       toast({

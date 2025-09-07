@@ -26,7 +26,7 @@ export const UserProvider = ({ children }) => {
 
 export const getUser = async (setUser) => {
   try {
-    const { data } = await axios.get("http://localhost:8080/api/users/jwt");
+    const { data } = await axios.get("https://bookswaphub-ejar.onrender.com/api/users/jwt");
     setUser(data); 
   } catch (error) {
     console.error("Failed to fetch user:", error?.response?.data?.error || error.message);
