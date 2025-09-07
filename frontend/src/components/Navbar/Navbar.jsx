@@ -93,7 +93,7 @@ const Navbar = () => {
                   <MenuList>
                     <MenuItem as={Link} to="/profile">📘 My Library</MenuItem>
                     <MenuItem as={Link} to="/saved">🔖 Saved Books</MenuItem>
-                    <MenuItem as={Link} to="/marketplace">🛒 Marketplace</MenuItem>
+                    {/* <MenuItem as={Link} to="/marketplace">🛒 Marketplace</MenuItem> */}
                     <MenuDivider />
                     <MenuItem color="red.500" onClick={logOut}>🚪 Logout</MenuItem>
                   </MenuList>
@@ -135,7 +135,7 @@ const Navbar = () => {
                 <>
                   <NavItem to="/profile" label="My Library" />
                   <NavItem to="/saved" label="Saved Books" />
-                  <NavItem to="/marketplace" label="Marketplace" />
+                  {/* <NavItem to="/marketplace" label="Marketplace" /> */}
                   <Button colorScheme="red" size="sm" onClick={logOut}>
                     Logout
                   </Button>
